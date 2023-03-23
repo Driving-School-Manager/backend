@@ -34,3 +34,6 @@ build/
 /.mvn/
 /mvnw
 /mvnw.cmd
+
+### Local profiles ###
+**/application-dev.yml
