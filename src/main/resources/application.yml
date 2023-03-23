@@ -1,0 +1,6 @@
+# See: TEMPLATE.yml
+
+# Local profile in application-dev.yml
+spring:
+  profiles:
+    active: dev
