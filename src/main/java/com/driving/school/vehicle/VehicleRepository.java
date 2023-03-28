@@ -5,5 +5,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
-    public boolean existsById(Long id);
+    @Override
+    boolean existsById(Long aLong);
 }

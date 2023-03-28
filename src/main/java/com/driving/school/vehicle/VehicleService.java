@@ -34,8 +34,8 @@ public class VehicleService {
     }
 
     public void deleteVehicleById(Long id){
-        Vehicle existingVehicle = getVehicleById(id);
-        vehicleRepository.deleteById(existingVehicle.getId());
+        existsById(id);
+        vehicleRepository.deleteById(id);
     }
 
     private VehicleDto updateVehicle(Long id, Vehicle vehicle){
@@ -53,5 +53,9 @@ public class VehicleService {
                 .orElseThrow(() -> new NoVehicleFoundException("No such vehicle in database!"));
     }
 
+    private void existsById(Long id){
+        if(!vehicleRepository.existsById(id))
+            throw new NoVehicleFoundException("No such vehicle in database!");
+    }
 
 }
