@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,12 +23,8 @@ public class StudentApi {
 
     @GetMapping("/{id}")
     public ResponseEntity<StudentModel> getStudentById(@PathVariable long id){
-        Optional<StudentModel> student = studentService.getStudentById(id);
-        if(student.isPresent()){
-            return new ResponseEntity<>(student.get(),HttpStatus.OK);
-        } else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+            return new ResponseEntity<>(studentService.getStudentById(id),HttpStatus.OK);
+
     }
 
 

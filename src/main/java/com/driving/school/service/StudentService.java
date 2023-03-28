@@ -3,10 +3,10 @@ package com.driving.school.service;
 import com.driving.school.model.StudentModel;
 import com.driving.school.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.source.InvalidConfigurationPropertyValueException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,7 +16,7 @@ public class StudentService {
         return repo.findAll();
     }
 
-    public Optional<StudentModel> getStudentById(long id){
-        return repo.findById(id);
+    public StudentModel getStudentById(long id){
+        return repo.findById(id).orElseThrow(() -> new InvalidConfigurationPropertyValueException("id",id, "student with given id not found in data base"));
     }
 }
