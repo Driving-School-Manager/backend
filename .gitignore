@@ -35,6 +35,6 @@ build/
 /mvnw
 /mvnw.cmd
 
+src/main/resources/data.sql
 ### Local profiles ###
 **/application-dev.yml
-**/data.sql
