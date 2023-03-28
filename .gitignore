@@ -37,3 +37,4 @@ build/
 
 ### Local profiles ###
 **/application-dev.yml
+**/data.sql
