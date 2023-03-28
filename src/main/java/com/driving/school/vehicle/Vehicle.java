@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -22,6 +21,6 @@ public class Vehicle {
     private Long id;
     private String brand;
     private String status;
-    private VehicleTransmissionType type;
+    private String transmissionType;
     private String yearOfFabrication;
 }
