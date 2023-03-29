@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidConfigurationPropertyValueException.class)
-    public ResponseEntity<String> handleInvalidConfigurationPropertyValueException(InvalidConfigurationPropertyValueException exception){
+    public ResponseEntity<String> handleInvalidConfigurationPropertyValueException(InvalidConfigurationPropertyValueException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
     }
 }
