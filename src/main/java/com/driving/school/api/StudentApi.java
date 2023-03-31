@@ -35,17 +35,17 @@ public class StudentApi {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateStudent(
+    public ResponseEntity<StudentListItemDTO> updateStudent(
             @PathVariable long id,
             @RequestBody StudentDetailsDTO student
     ) {
-        studentService.updateStudent(id, student);
-        return new ResponseEntity<>(HttpStatus.OK);
+        StudentListItemDTO newStudent = studentService.updateStudent(id, student);
+        return new ResponseEntity<>(newStudent, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity addStudent(@RequestBody StudentDetailsDTO student) {
-        studentService.addStudent(student);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<StudentListItemDTO> addStudent(@RequestBody StudentDetailsDTO student) {
+        StudentListItemDTO newStudent = studentService.addStudent(student);
+        return new ResponseEntity<>(newStudent, HttpStatus.OK);
     }
 }

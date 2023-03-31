@@ -2,6 +2,7 @@ package com.driving.school.service;
 
 import com.driving.school.dto.StudentDetailsDTO;
 import com.driving.school.dto.StudentListItemDTO;
+import com.driving.school.model.StudentModel;
 import com.driving.school.repository.StudentRepository;
 import com.driving.school.utils.StudentMapper;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +32,14 @@ public class StudentService {
         }
     }
 
-    public void addStudent(StudentDetailsDTO student) {
-        repo.save(mapper.toStudentModel(student));
+    public StudentListItemDTO addStudent(StudentDetailsDTO student) {
+        StudentModel newStudent = repo.save(mapper.toStudentModel(student));
+        return mapper.toStudentListItemDto(newStudent);
     }
 
-    public void updateStudent(long id, StudentDetailsDTO student) {
+    public StudentListItemDTO updateStudent(long id, StudentDetailsDTO student) {
         deleteStudentById(id);
-        addStudent(student);
+        return addStudent(student);
     }
 
 }
