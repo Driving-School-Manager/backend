@@ -9,9 +9,9 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
-public abstract class BaseModel {
+public abstract class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    protected Long id;
+    protected long id;
 }

@@ -18,24 +18,24 @@ public abstract class CrudApi<T extends CreationDto> {
 
     @GetMapping
     public ResponseEntity<List<ResponseDto>> getAll() {
-        List<ResponseDto> students = service.getAll();
+        List<ResponseDto> allEntitiesDto = service.getAll();
 
-        return ResponseEntity.ok(students);
+        return ResponseEntity.ok(allEntitiesDto);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ResponseDto> getById(@PathVariable long id) {
-        ResponseDto found = service.getById(id);
+        ResponseDto foundDto = service.getById(id);
 
-        return ResponseEntity.ok(found);
+        return ResponseEntity.ok(foundDto);
     }
 
     @PostMapping
     public ResponseEntity<ResponseDto> create(@RequestBody T requestData) {
         ResponseDto createdDto = service.create(requestData);
-        URI newStudentLocation = getNewResourceLocation(createdDto.id());
+        URI newResourceLocation = getNewResourceLocation(createdDto.id());
 
-        return createResponse(createdDto, newStudentLocation);
+        return createResponse(createdDto, newResourceLocation);
     }
 
     @DeleteMapping("/{id}")
@@ -46,10 +46,7 @@ public abstract class CrudApi<T extends CreationDto> {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseDto> replace(
-            @PathVariable long id,
-            @RequestBody T requestData
-    ) {
+    public ResponseEntity<ResponseDto> replace(@PathVariable long id, @RequestBody T requestData) {
         ResponseDto replacement = service.replace(id, requestData);
 
         return ResponseEntity.ok(replacement);

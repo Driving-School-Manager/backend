@@ -4,14 +4,15 @@ import com.driving.school.dto.CreationDto;
 import com.driving.school.dto.ResponseDto;
 import com.driving.school.dto.mapper.Mapper;
 import com.driving.school.exception.ResourceNotFoundException;
-import com.driving.school.model.BaseModel;
+import com.driving.school.model.BaseEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @RequiredArgsConstructor
-public abstract class CrudService<T extends BaseModel> {
+public abstract class CrudService<T extends BaseEntity> {
     private final JpaRepository<T, Long> repo;
     private final Mapper<T> mapper;
 
@@ -24,7 +25,7 @@ public abstract class CrudService<T extends BaseModel> {
     public ResponseDto getById(long id) {
         return repo.findById(id)
                 .map(mapper::toResponseDto)
-                .orElseThrow(() -> createException(id));
+                .orElseThrow(() -> buildException(id));
     }
 
     public ResponseDto create(CreationDto requestData) {
@@ -41,6 +42,7 @@ public abstract class CrudService<T extends BaseModel> {
         repo.deleteById(id);
     }
 
+    @Transactional
     public ResponseDto replace(long id, CreationDto requestData) {
         deleteById(id);
 
@@ -51,11 +53,11 @@ public abstract class CrudService<T extends BaseModel> {
 
     private void throwIfNotInDatabase(Long id) {
         if (!repo.existsById(id)) {
-            throw createException(id);
+            throw buildException(id);
         }
     }
 
-    private ResourceNotFoundException createException(Long id) {
+    private ResourceNotFoundException buildException(Long id) {
         String msg = getNotFoundExceptionTemplate().formatted(id);
         return new ResourceNotFoundException(msg);
     }

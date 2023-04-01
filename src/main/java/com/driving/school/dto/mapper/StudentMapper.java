@@ -8,23 +8,26 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class StudentMapper implements Mapper<Student> {
-    public StudentResponseDto toResponseDto(Student source) {
+    public StudentResponseDto toResponseDto(Student entity) {
         return new StudentResponseDto(
-                source.getId(),
-                source.getFirstName(),
-                source.getLastName(),
-                source.getEmail(),
-                source.isActive()
+                entity.getId(),
+                entity.getFirstName(),
+                entity.getLastName(),
+                entity.getEmail(),
+                entity.isActive()
         );
     }
 
     public Student toModel(CreationDto requestData) {
-        StudentCreationDto source = (StudentCreationDto) requestData;
-        return new Student(
-                source.firstName(),
-                source.lastName(),
-                source.email(),
-                source.active()
-        );
+        if (requestData instanceof StudentCreationDto source) {
+            return new Student(
+                    source.firstName(),
+                    source.lastName(),
+                    source.email(),
+                    source.active()
+            );
+        }
+
+        throw throwOnInvalidRequestType(requestData);
     }
 }

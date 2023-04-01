@@ -9,23 +9,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class VehicleMapper implements Mapper<Vehicle> {
 
-    public VehicleResponseDto toResponseDto(Vehicle source) {
+    public VehicleResponseDto toResponseDto(Vehicle entity) {
         return new VehicleResponseDto(
-                source.getId(),
-                source.getBrand(),
-                source.getStatus(),
-                source.getTransmission(),
-                source.getYearOfManufacture()
+                entity.getId(),
+                entity.getBrand(),
+                entity.getStatus(),
+                entity.getTransmission(),
+                entity.getYearOfManufacture()
         );
     }
 
     public Vehicle toModel(CreationDto requestData) {
-        VehicleCreationDto source = (VehicleCreationDto) requestData;
-        return new Vehicle(
-                source.brand(),
-                source.status(),
-                source.transmission(),
-                source.yearOfManufacture()
-        );
+        if (requestData instanceof VehicleCreationDto source) {
+            return new Vehicle(
+                    source.brand(),
+                    source.status(),
+                    source.transmission(),
+                    source.yearOfManufacture()
+            );
+        }
+
+        throw throwOnInvalidRequestType(requestData);
     }
+
 }

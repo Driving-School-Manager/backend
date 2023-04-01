@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Vehicle extends BaseModel {
+public class Vehicle extends BaseEntity {
     @Column(name = "brand")
     private String brand;
     @Column(name = "status")
