@@ -1,13 +1,14 @@
 package com.driving.school.api;
 
-import com.driving.school.dto.StudentDetailsDTO;
-import com.driving.school.dto.StudentListItemDTO;
+import com.driving.school.dto.StudentCreationDto;
+import com.driving.school.dto.StudentResponseDto;
 import com.driving.school.service.StudentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -15,37 +16,50 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping(value = "/students")
 public class StudentApi {
-    private final StudentService studentService;
+    private final StudentService service;
 
     @GetMapping
-    public ResponseEntity<List<StudentListItemDTO>> getStudents() {
-        List<StudentListItemDTO> studentList = studentService.getStudents();
-        return new ResponseEntity<>(studentList, HttpStatus.OK);
+    public ResponseEntity<List<StudentResponseDto>> getStudents() {
+        List<StudentResponseDto> students = service.getStudents();
+        return ResponseEntity.ok(students);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StudentDetailsDTO> getStudentById(@PathVariable long id) {
-        return new ResponseEntity<>(studentService.getStudentById(id), HttpStatus.OK);
+    public ResponseEntity<StudentResponseDto> getStudentById(@PathVariable long id) {
+        StudentResponseDto found = service.getStudentById(id);
+        return ResponseEntity.ok(found);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteStudentById(@PathVariable long id) {
-        studentService.deleteStudentById(id);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Void> deleteStudentById(@PathVariable long id) {
+        service.deleteStudentById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateStudent(
+    public ResponseEntity<StudentResponseDto> updateStudent(
             @PathVariable long id,
-            @RequestBody StudentDetailsDTO student
+            @RequestBody StudentCreationDto student
     ) {
-        studentService.updateStudent(id, student);
-        return new ResponseEntity<>(HttpStatus.OK);
+        StudentResponseDto updated = service.updateStudent(id, student);
+        return ResponseEntity.ok(updated);
     }
 
     @PostMapping
-    public ResponseEntity addStudent(@RequestBody StudentDetailsDTO student) {
-        studentService.addStudent(student);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<StudentResponseDto> addStudent(@RequestBody StudentCreationDto student) {
+        StudentResponseDto createdStudent = service.addStudent(student);
+        URI newStudentLocation = getNewResourceLocation(createdStudent.id());
+
+        return ResponseEntity
+                .created(newStudentLocation)
+                .body(createdStudent);
+    }
+
+    private URI getNewResourceLocation(long id) {
+        return ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
     }
 }

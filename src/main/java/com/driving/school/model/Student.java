@@ -1,18 +1,15 @@
 package com.driving.school.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
-@RequiredArgsConstructor
 @Getter
 @ToString
+@EqualsAndHashCode
+@NoArgsConstructor
 @AllArgsConstructor
-
-public class StudentModel {
+public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

@@ -1,11 +1,12 @@
 package com.driving.school.service;
 
-import com.driving.school.dto.StudentDetailsDTO;
-import com.driving.school.dto.StudentListItemDTO;
+import com.driving.school.dto.StudentCreationDto;
+import com.driving.school.dto.StudentResponseDto;
+import com.driving.school.exception.StudentNotFoundException;
+import com.driving.school.model.Student;
 import com.driving.school.repository.StudentRepository;
-import com.driving.school.utils.StudentMapper;
+import com.driving.school.mapper.StudentMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.source.InvalidConfigurationPropertyValueException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,28 +17,38 @@ public class StudentService {
     private final StudentRepository repo;
     private final StudentMapper mapper;
 
-    public List<StudentListItemDTO> getStudents() {
-        return repo.findAll().stream().map(mapper::toStudentListItemDto).toList();
+    public List<StudentResponseDto> getStudents() {
+        return repo.findAll().stream()
+                .map(mapper::toStudentResponseDto)
+                .toList();
     }
 
-    public StudentDetailsDTO getStudentById(long id) {
-        return repo.findById(id).map(mapper::toStudentDetailsDto).orElseThrow(() -> new InvalidConfigurationPropertyValueException("id", id, "student with given id not found in data base"));
+    public StudentResponseDto getStudentById(long id) {
+        return repo.findById(id)
+                .map(mapper::toStudentResponseDto)
+                .orElseThrow(StudentNotFoundException.supplyFrom(id));
     }
 
     public void deleteStudentById(long id) {
         int deletedRows = repo.removeById(id);
         if (deletedRows != 1) {
-            throw new InvalidConfigurationPropertyValueException("id", id, "student with given id not found in data base");
+            throw StudentNotFoundException.supplyFrom(id).get();
         }
     }
 
-    public void addStudent(StudentDetailsDTO student) {
-        repo.save(mapper.toStudentModel(student));
+    public StudentResponseDto addStudent(StudentCreationDto studentRequestDto) {
+        Student newStudentModel = mapper.toStudent(studentRequestDto);
+        // we should use the return value for further processing
+        // it's not the same as newStudentModel (it has an ID, for example)
+        Student created = repo.save(newStudentModel);
+
+        return mapper.toStudentResponseDto(created);
     }
 
-    public void updateStudent(long id, StudentDetailsDTO student) {
+    public StudentResponseDto updateStudent(long id, StudentCreationDto student) {
         deleteStudentById(id);
-        addStudent(student);
+
+        return addStudent(student);
     }
 
 }
