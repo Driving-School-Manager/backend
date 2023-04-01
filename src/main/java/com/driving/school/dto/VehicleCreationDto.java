@@ -5,4 +5,4 @@ public record VehicleCreationDto(
         String status,
         String transmission,
         String yearOfManufacture
-) { }
+) implements CreationDto { }

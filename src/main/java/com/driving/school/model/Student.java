@@ -1,19 +1,16 @@
 package com.driving.school.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import lombok.*;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-@EqualsAndHashCode
-public class Student {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private long id;
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+public class Student extends BaseModel {
     @Column(name = "first_name")
     private String firstName;
     @Column(name = "last_name")

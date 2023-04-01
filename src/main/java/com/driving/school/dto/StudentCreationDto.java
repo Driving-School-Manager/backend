@@ -5,4 +5,4 @@ public record StudentCreationDto(
         String lastName,
         String email,
         boolean active
-) { }
+) implements CreationDto { }

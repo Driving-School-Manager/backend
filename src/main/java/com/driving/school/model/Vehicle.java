@@ -7,13 +7,9 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-@EqualsAndHashCode
-public class Vehicle {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+public class Vehicle extends BaseModel {
     @Column(name = "brand")
     private String brand;
     @Column(name = "status")

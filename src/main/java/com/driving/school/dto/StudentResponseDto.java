@@ -6,4 +6,4 @@ public record StudentResponseDto(
         String lastName,
         String email,
         boolean active
-) { }
+) implements ResponseDto { }

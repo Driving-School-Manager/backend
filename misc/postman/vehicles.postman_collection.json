@@ -1,0 +1,262 @@
+{
+	"info": {
+		"_postman_id": "a0194a6b-a29a-444e-9ebd-cfedda9c68ae",
+		"name": "OSK /vehicles",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26294835"
+	},
+	"item": [
+		{
+			"name": "all vehicles",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vehicles",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vehicles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "vehicle by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vehicles/5",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vehicles",
+						"5"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "vehicle by ID (nonexistent)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vehicles/0",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vehicles",
+						"0"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add a vehicle",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"brand\": \"Citroen\",\r\n    \"status\": \"OK\",\r\n    \"transmission\": \"manual\",\r\n    \"yearOfManufacture\": \"2000\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vehicles",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vehicles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "replace a vehicle",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"brand\": \"Mercedes\",\r\n    \"status\": \"In repair\",\r\n    \"transmission\": \"automatic\",\r\n    \"yearOfManufacture\": \"2010\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vehicles/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vehicles",
+						"1"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "replace a vehicle (malformed)",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"wrong-key\":\"something\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vehicles/2",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vehicles",
+						"2"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "replace a vehicle (no body)",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vehicles/2",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vehicles",
+						"2"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "replace a vehicle (nonexistent)",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"firstName\": \"New\",\r\n    \"lastName\": \"Student\",\r\n    \"email\": \"some@mail.com\",\r\n    \"active\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vehicles/0",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vehicles",
+						"0"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete a vehicle",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vehicles/6",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vehicles",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete a vehicle (nonexistent)",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vehicles/0",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vehicles",
+						"0"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
