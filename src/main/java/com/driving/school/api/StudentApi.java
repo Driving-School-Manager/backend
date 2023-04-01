@@ -2,11 +2,11 @@ package com.driving.school.api;
 
 import com.driving.school.dto.StudentCreationDto;
 import com.driving.school.dto.StudentResponseDto;
+import com.driving.school.service.EntityCreationApi;
 import com.driving.school.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
@@ -15,51 +15,46 @@ import java.util.List;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping(value = "/students")
-public class StudentApi {
+public class StudentApi implements EntityCreationApi {
     private final StudentService service;
 
     @GetMapping
     public ResponseEntity<List<StudentResponseDto>> getStudents() {
         List<StudentResponseDto> students = service.getStudents();
+
         return ResponseEntity.ok(students);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<StudentResponseDto> getStudentById(@PathVariable long id) {
         StudentResponseDto found = service.getStudentById(id);
+
         return ResponseEntity.ok(found);
+    }
+
+    @PostMapping
+    public ResponseEntity<StudentResponseDto> addStudent(@RequestBody StudentCreationDto requestData) {
+        StudentResponseDto createdStudent = service.addStudent(requestData);
+        URI newStudentLocation = getNewResourceLocation(createdStudent.id());
+
+        return createResponse(createdStudent, newStudentLocation);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudentById(@PathVariable long id) {
         service.deleteStudentById(id);
+
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<StudentResponseDto> updateStudent(
+    public ResponseEntity<StudentResponseDto> replaceStudent(
             @PathVariable long id,
-            @RequestBody StudentCreationDto student
+            @RequestBody StudentCreationDto requestData
     ) {
-        StudentResponseDto updated = service.updateStudent(id, student);
-        return ResponseEntity.ok(updated);
+        StudentResponseDto replacement = service.replaceStudent(id, requestData);
+
+        return ResponseEntity.ok(replacement);
     }
 
-    @PostMapping
-    public ResponseEntity<StudentResponseDto> addStudent(@RequestBody StudentCreationDto student) {
-        StudentResponseDto createdStudent = service.addStudent(student);
-        URI newStudentLocation = getNewResourceLocation(createdStudent.id());
-
-        return ResponseEntity
-                .created(newStudentLocation)
-                .body(createdStudent);
-    }
-
-    private URI getNewResourceLocation(long id) {
-        return ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(id)
-                .toUri();
-    }
 }

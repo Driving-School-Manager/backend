@@ -1,4 +1,4 @@
-package com.driving.school.mapper;
+package com.driving.school.dto.mapper;
 
 import com.driving.school.dto.StudentCreationDto;
 import com.driving.school.dto.StudentResponseDto;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class StudentMapper {
-    public StudentResponseDto toStudentResponseDto(Student source) {
+    public StudentResponseDto toResponseDto(Student source) {
         return new StudentResponseDto(
                 source.getId(),
                 source.getFirstName(),
@@ -17,7 +17,7 @@ public class StudentMapper {
         );
     }
 
-    public Student toStudent(StudentCreationDto source) {
+    public Student toModel(StudentCreationDto source) {
         return new Student(
                 0L,
                 source.firstName(),
