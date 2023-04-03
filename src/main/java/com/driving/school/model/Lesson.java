@@ -18,11 +18,7 @@ public class Lesson {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            mappedBy = "lesson"
-    )
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lesson")
     private Set<TimeSlot> timeSlots = new HashSet<>();
 
     @Enumerated(EnumType.STRING)

@@ -17,25 +17,15 @@ public class InstructorSchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL
-    )
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn
     private Timetable timetable;
 
-    @ManyToOne(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL
-    )
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn
     private Instructor instructor;
 
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            mappedBy = "instructorSchedule"
-    )
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "instructorSchedule")
     private Set<TimeSlot> timeSlots = new HashSet<>();
 
 }

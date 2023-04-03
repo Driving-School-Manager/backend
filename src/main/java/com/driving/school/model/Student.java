@@ -30,18 +30,10 @@ public class Student {
 
     private int lessonMinutesLeft;
 
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            mappedBy = "student"
-    )
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
     private Set<Lesson> lessons = new HashSet<>();
 
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            mappedBy = "student"
-    )
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
     private Set<Payment> payments = new HashSet<>();
 
     @OneToOne(cascade = CascadeType.ALL)

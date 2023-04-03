@@ -27,17 +27,10 @@ public class Vehicle {
     @Enumerated(EnumType.STRING)
     private LicenseCategory licenseCategory;
 
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            mappedBy = "vehicle"
-    )
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "vehicle")
     private Set<Lesson> lessons = new HashSet<>();
 
-    @ManyToMany(
-            mappedBy = "assignedVehicles",
-            fetch = FetchType.EAGER
-    )
+    @ManyToMany(mappedBy = "assignedVehicles")
     private Set<Instructor> assignedInstructors = new HashSet<>();
 }
 

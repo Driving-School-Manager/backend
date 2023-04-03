@@ -22,20 +22,14 @@ public class TimeSlot {
 
     private LocalTime end;
 
-    @ManyToOne(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL
-    )
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn
     private InstructorSchedule instructorSchedule;
 
     @Enumerated(EnumType.STRING)
     private InstructorAvailability availability;
 
-    @ManyToOne(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL
-    )
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn
     @Nullable
     private Lesson lesson;

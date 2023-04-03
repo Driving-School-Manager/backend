@@ -29,25 +29,14 @@ public class Instructor {
     @CollectionTable
     private Set<LicenseCategory> licenseCategories = new HashSet<>();
 
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            mappedBy = "instructor"
-    )
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "instructor")
     private Set<Lesson> lessons = new HashSet<>();
 
-    @ManyToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL
-    )
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable
     private Set<Vehicle> assignedVehicles = new HashSet<>();
 
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            mappedBy = "instructor"
-    )
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "instructor")
     private Set<InstructorSchedule> instructorSchedules = new HashSet<>();
 
     @OneToOne(cascade = CascadeType.ALL)

@@ -24,10 +24,6 @@ public class Timetable {
     @Enumerated(EnumType.STRING)
     private DayOfWeek dayOfWeek;
 
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            mappedBy = "timetable"
-    )
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "timetable")
     private Set<InstructorSchedule> instructorSchedules = new HashSet<>();
 }

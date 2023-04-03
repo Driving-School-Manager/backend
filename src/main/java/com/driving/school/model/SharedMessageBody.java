@@ -21,10 +21,6 @@ public class SharedMessageBody {
     @Lob
     private byte[] compressedData;
 
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            mappedBy = "messageBody"
-    )
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "messageBody")
     private Set<PerUserMessage> messages;
 }
