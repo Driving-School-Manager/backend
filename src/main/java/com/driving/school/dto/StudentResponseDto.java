@@ -13,7 +13,7 @@ public record StudentResponseDto(
         String lastName,
         String email,
         boolean blocked,
-        boolean wantsMarketing,
+        boolean marketingEnabled,
         BigDecimal accountBalance,
         int lessonMinutesLeft,
         Set<Lesson> lessons,

@@ -18,9 +18,11 @@ public class TimeSlot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private LocalTime start;
+    //"start" / "end" are a reserved keywords in some SQL dialects
+    //using longer defs just to avoid weird problems if we ever migrate to something other than MySQL
+    private LocalTime startTime;
 
-    private LocalTime end;
+    private LocalTime endTime;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn

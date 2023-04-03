@@ -19,7 +19,9 @@ public class Timetable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private LocalDate date;
+    //"date" is a reserved keyword in some SQL dialects
+    //using a longer def just to avoid weird problems if we ever migrate to something other than MySQL
+    private LocalDate timetableDate;
 
     @Enumerated(EnumType.STRING)
     private DayOfWeek dayOfWeek;

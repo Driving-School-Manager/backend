@@ -16,7 +16,9 @@ public class Vehicle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private String name;
+    //"name" is a reserved keyword in some SQL dialects
+    //using a longer def just to avoid weird problems if we ever migrate to something other than MySQL
+    private String vehicleName;
 
     private String licensePlate;
 

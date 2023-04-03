@@ -15,7 +15,7 @@ public class VehicleMapper implements Mapper<Vehicle> {
     public VehicleResponseDto toResponseDto(Vehicle entity) {
         return new VehicleResponseDto(
                 entity.getId(),
-                entity.getName(),
+                entity.getVehicleName(),
                 entity.getLicensePlate(),
                 entity.isAvailable(),
                 entity.getYearOfManufacture(),

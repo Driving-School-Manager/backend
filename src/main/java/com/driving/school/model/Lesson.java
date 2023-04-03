@@ -21,8 +21,10 @@ public class Lesson {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "lesson")
     private Set<TimeSlot> timeSlots = new HashSet<>();
 
+    //"status" is a reserved keyword in some SQL dialects
+    //using a longer def just to avoid weird problems if we ever migrate to something other than MySQL
     @Enumerated(EnumType.STRING)
-    private LessonStatus status;
+    private LessonStatus lessonStatus;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn

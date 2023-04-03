@@ -4,3 +4,5 @@
 spring:
   profiles:
     active: dev
+
+# TODO disable open-session-in-view # jpa.open-in-view: false #

@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-
 @Entity
 @Data
 @NoArgsConstructor
@@ -15,10 +13,6 @@ public class PerUserMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
-    private Instant issuedAt;
-
-    private Instant expiresAt;
 
     private boolean opened;
 
