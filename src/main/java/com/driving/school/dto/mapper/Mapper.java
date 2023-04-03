@@ -8,7 +8,13 @@ public interface Mapper<T> {
 
     T toModel(CreationDto requestData);
 
-    default IllegalArgumentException throwOnInvalidRequestType(CreationDto requestData) {
+    default void ifNotInstanceThrow(CreationDto requestData, Class<? extends CreationDto> expectedDtoType) {
+        if (!expectedDtoType.isInstance(requestData)) {
+            throw getInvalidDtoTypeException(requestData);
+        }
+    }
+
+    private IllegalArgumentException getInvalidDtoTypeException(CreationDto requestData) {
         String template = """
                 Invalid mapper provided for request:
                 %s

@@ -4,19 +4,18 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-public class Vehicle extends BaseEntity {
-    @Column(name = "brand")
+public class Vehicle {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
     private String brand;
-    @Column(name = "status")
-    private String status;
-    @Column(name = "transmission")
-    private String transmission;
-    @Column(name = "year_of_manufacture")
+
+    private boolean active;
+
     private String yearOfManufacture;
 }
 

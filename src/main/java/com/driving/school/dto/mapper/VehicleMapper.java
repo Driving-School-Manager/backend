@@ -13,23 +13,21 @@ public class VehicleMapper implements Mapper<Vehicle> {
         return new VehicleResponseDto(
                 entity.getId(),
                 entity.getBrand(),
-                entity.getStatus(),
-                entity.getTransmission(),
+                entity.isActive(),
                 entity.getYearOfManufacture()
         );
     }
 
     public Vehicle toModel(CreationDto requestData) {
-        if (requestData instanceof VehicleCreationDto source) {
-            return new Vehicle(
-                    source.brand(),
-                    source.status(),
-                    source.transmission(),
-                    source.yearOfManufacture()
-            );
-        }
+        ifNotInstanceThrow(requestData, VehicleCreationDto.class);
 
-        throw throwOnInvalidRequestType(requestData);
+        VehicleCreationDto source = (VehicleCreationDto) requestData;
+        return new Vehicle(
+                0L,
+                source.brand(),
+                source.active(),
+                source.yearOfManufacture()
+        );
     }
 
 }

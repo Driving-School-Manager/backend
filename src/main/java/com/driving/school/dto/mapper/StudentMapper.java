@@ -19,15 +19,15 @@ public class StudentMapper implements Mapper<Student> {
     }
 
     public Student toModel(CreationDto requestData) {
-        if (requestData instanceof StudentCreationDto source) {
-            return new Student(
-                    source.firstName(),
-                    source.lastName(),
-                    source.email(),
-                    source.active()
-            );
-        }
+        ifNotInstanceThrow(requestData, StudentCreationDto.class);
 
-        throw throwOnInvalidRequestType(requestData);
+        StudentCreationDto source = (StudentCreationDto) requestData;
+        return new Student(
+                0L,
+                source.firstName(),
+                source.lastName(),
+                source.email(),
+                source.active()
+        );
     }
 }

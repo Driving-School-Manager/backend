@@ -4,7 +4,6 @@ import com.driving.school.dto.CreationDto;
 import com.driving.school.dto.ResponseDto;
 import com.driving.school.dto.mapper.Mapper;
 import com.driving.school.exception.ResourceNotFoundException;
-import com.driving.school.model.BaseEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @RequiredArgsConstructor
-public abstract class CrudService<T extends BaseEntity> {
+public abstract class CrudService<T> {
     private final JpaRepository<T, Long> repo;
     private final Mapper<T> mapper;
 
