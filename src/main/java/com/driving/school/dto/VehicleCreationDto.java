@@ -1,7 +1,7 @@
 package com.driving.school.dto;
 
 public record VehicleCreationDto(
-        String brand,
-        boolean active,
+        String name,
+        boolean available,
         String yearOfManufacture
 ) implements CreationDto { }

@@ -4,5 +4,5 @@ public record StudentCreationDto(
         String firstName,
         String lastName,
         String email,
-        boolean active
+        boolean marketingEnabled
 ) implements CreationDto { }

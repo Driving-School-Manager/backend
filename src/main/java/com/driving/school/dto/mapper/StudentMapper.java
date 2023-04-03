@@ -3,8 +3,12 @@ package com.driving.school.dto.mapper;
 import com.driving.school.dto.CreationDto;
 import com.driving.school.dto.StudentCreationDto;
 import com.driving.school.dto.StudentResponseDto;
+import com.driving.school.model.Mailbox;
 import com.driving.school.model.Student;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.HashSet;
 
 @Component
 public class StudentMapper implements Mapper<Student> {
@@ -14,7 +18,13 @@ public class StudentMapper implements Mapper<Student> {
                 entity.getFirstName(),
                 entity.getLastName(),
                 entity.getEmail(),
-                entity.isActive()
+                entity.isBlocked(),
+                entity.isMarketingEnabled(),
+                entity.getAccountBalance(),
+                entity.getLessonMinutesLeft(),
+                entity.getLessons(),
+                entity.getPayments(),
+                entity.getMailbox().getMessages()
         );
     }
 
@@ -27,7 +37,13 @@ public class StudentMapper implements Mapper<Student> {
                 source.firstName(),
                 source.lastName(),
                 source.email(),
-                source.active()
+                false,
+                source.marketingEnabled(),
+                BigDecimal.ZERO,
+                60,
+                new HashSet<>(),
+                new HashSet<>(),
+                new Mailbox()
         );
     }
 }
