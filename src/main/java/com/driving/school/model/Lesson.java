@@ -18,7 +18,7 @@ public class Lesson {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lesson")
+    @OneToMany(mappedBy = "lesson")
     private Set<TimeSlot> timeSlots = new HashSet<>();
 
     //"status" is a reserved keyword in some SQL dialects
@@ -26,15 +26,15 @@ public class Lesson {
     @Enumerated(EnumType.STRING)
     private LessonStatus lessonStatus;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
     private Student student;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
     private Instructor instructor;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
     private Vehicle vehicle;
 

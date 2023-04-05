@@ -24,14 +24,14 @@ public class TimeSlot {
 
     private LocalTime endTime;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn
     private InstructorSchedule instructorSchedule;
 
     @Enumerated(EnumType.STRING)
     private InstructorAvailability availability;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn
     @Nullable
     private Lesson lesson;

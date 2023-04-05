@@ -12,8 +12,8 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public abstract class CrudService<T> {
-    private final JpaRepository<T, Long> repo;
-    private final Mapper<T> mapper;
+    protected final JpaRepository<T, Long> repo;
+    protected final Mapper<T> mapper;
 
     public List<ResponseDto> getAll() {
         return repo.findAll().stream()
@@ -50,13 +50,13 @@ public abstract class CrudService<T> {
 
     protected abstract String getNotFoundExceptionTemplate();
 
-    private void throwIfNotInDatabase(Long id) {
+    protected void throwIfNotInDatabase(Long id) {
         if (!repo.existsById(id)) {
             throw buildException(id);
         }
     }
 
-    private ResourceNotFoundException buildException(Long id) {
+    protected ResourceNotFoundException buildException(Long id) {
         String msg = getNotFoundExceptionTemplate().formatted(id);
         return new ResourceNotFoundException(msg);
     }

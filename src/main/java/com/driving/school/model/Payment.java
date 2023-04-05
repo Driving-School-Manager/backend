@@ -3,9 +3,7 @@ package com.driving.school.model;
 import com.driving.school.model.enumeration.PaymentMethod;
 import com.driving.school.model.enumeration.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -18,8 +16,10 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Student student;
 
     private BigDecimal amount;

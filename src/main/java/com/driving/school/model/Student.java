@@ -11,6 +11,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,12 +31,28 @@ public class Student {
 
     private int lessonMinutesLeft;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
+    @OneToMany(mappedBy = "student", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Lesson> lessons = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
+    @OneToMany(mappedBy = "student", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Payment> payments = new HashSet<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Mailbox mailbox;
+
+    public void addPayment(Payment payment) {
+        this.payments.add(payment);
+        payment.setStudent(this);
+    }
+
+    public void removePayment(Payment payment) {
+        payment.setStudent(null);
+        this.payments.remove(payment);
+    }
 }

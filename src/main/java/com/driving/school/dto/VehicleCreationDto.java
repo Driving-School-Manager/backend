@@ -1,7 +1,11 @@
 package com.driving.school.dto;
 
+import com.driving.school.model.enumeration.LicenseCategory;
+
 public record VehicleCreationDto(
-        String name,
-        boolean available,
-        String yearOfManufacture
+        String vehicleName,
+        String licensePlate,
+        String yearOfManufacture,
+        LicenseCategory licenseCategory
+
 ) implements CreationDto { }

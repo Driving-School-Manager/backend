@@ -29,16 +29,16 @@ public class Instructor {
     @CollectionTable
     private Set<LicenseCategory> licenseCategories = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "instructor")
+    @OneToMany(mappedBy = "instructor")
     private Set<Lesson> lessons = new HashSet<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     @JoinTable
     private Set<Vehicle> assignedVehicles = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "instructor")
+    @OneToMany(mappedBy = "instructor", cascade = CascadeType.PERSIST)
     private Set<InstructorSchedule> instructorSchedules = new HashSet<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
     private Mailbox mailbox;
 }

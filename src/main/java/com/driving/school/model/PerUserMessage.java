@@ -16,11 +16,11 @@ public class PerUserMessage {
 
     private boolean opened;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
     private SharedMessageBody messageBody;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn
     private Mailbox mailbox;
 }

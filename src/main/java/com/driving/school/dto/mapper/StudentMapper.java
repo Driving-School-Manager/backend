@@ -21,10 +21,7 @@ public class StudentMapper implements Mapper<Student> {
                 entity.isBlocked(),
                 entity.isMarketingEnabled(),
                 entity.getAccountBalance(),
-                entity.getLessonMinutesLeft(),
-                entity.getLessons(),
-                entity.getPayments(),
-                entity.getMailbox().getMessages()
+                entity.getLessonMinutesLeft()
         );
     }
 

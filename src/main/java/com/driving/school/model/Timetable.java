@@ -26,6 +26,6 @@ public class Timetable {
     @Enumerated(EnumType.STRING)
     private DayOfWeek dayOfWeek;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "timetable")
+    @OneToMany(mappedBy = "timetable", cascade = CascadeType.ALL)
     private Set<InstructorSchedule> instructorSchedules = new HashSet<>();
 }

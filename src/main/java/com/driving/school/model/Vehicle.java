@@ -29,10 +29,14 @@ public class Vehicle {
     @Enumerated(EnumType.STRING)
     private LicenseCategory licenseCategory;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "vehicle")
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Lesson> lessons = new HashSet<>();
 
-    @ManyToMany(mappedBy = "assignedVehicles")
+    @ManyToMany(mappedBy = "assignedVehicles", cascade = CascadeType.PERSIST)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Instructor> assignedInstructors = new HashSet<>();
 }
 

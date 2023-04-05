@@ -17,6 +17,6 @@ public class Mailbox {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "mailbox")
+    @OneToMany(mappedBy = "mailbox", orphanRemoval = true)
     private Set<PerUserMessage> messages = new HashSet<>();
 }
