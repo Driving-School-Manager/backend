@@ -22,6 +22,18 @@ public class StudentRemovalUtil {
     private final PerUserMessageRepository userMessageRepo;
     private final SharedMessageBodyRepository sharedMessageBodyRepository;
 
+
+    /**
+     * Deletes a Student and:<br>
+     * 1. deletes all Payments associated with that Student<br>
+     * 2. if there are any Lessons associated with the Student, this method WILL NOT delete them and instead set
+     * their 'student_id' to NULL<br>
+     * 3. deletes all (individual) PerUserMessages associated with the Student. If a given PerUserMessage is the LAST
+     * ONE with a given SharedMessageBody, the SharedMessageBody is also deleted<br>
+     * 4. deletes the Mailbox associated with the Student<br>
+     * @param   student
+     *          The Student entity, which is assumed to exist at this point.
+     */
     @Transactional(propagation = Propagation.MANDATORY)
     public void deleteStudent(Student student) {
         long studentId = student.getId();

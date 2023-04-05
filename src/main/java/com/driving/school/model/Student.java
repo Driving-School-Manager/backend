@@ -46,13 +46,13 @@ public class Student {
     @ToString.Exclude
     private Mailbox mailbox;
 
-    public void addPayment(Payment payment) {
-        this.payments.add(payment);
-        payment.setStudent(this);
-    }
-
-    public void removePayment(Payment payment) {
-        payment.setStudent(null);
-        this.payments.remove(payment);
-    }
+//    public void addPayment(Payment payment) {
+//        this.payments.add(payment);
+//        payment.setStudent(this);
+//    }
+//
+//    public void removePayment(Payment payment) {
+//        payment.setStudent(null);
+//        this.payments.remove(payment);
+//    }
 }
