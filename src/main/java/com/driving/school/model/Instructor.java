@@ -39,6 +39,6 @@ public class Instructor {
     @OneToMany(mappedBy = "instructor", cascade = CascadeType.PERSIST)
     private Set<InstructorSchedule> instructorSchedules = new HashSet<>();
 
-    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     private Mailbox mailbox;
 }

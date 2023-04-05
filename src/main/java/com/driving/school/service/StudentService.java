@@ -23,11 +23,6 @@ public class StudentService extends CrudService<Student> {
     }
 
     @Override
-    protected String getNotFoundExceptionTemplate() {
-        return "Student ID %d was not found in the database.";
-    }
-
-    @Override
     @Transactional
     public void deleteById(long id) {
         Student student = repo.findById(id)
