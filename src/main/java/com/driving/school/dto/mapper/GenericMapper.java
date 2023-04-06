@@ -2,19 +2,22 @@ package com.driving.school.dto.mapper;
 
 import com.driving.school.dto.CreationDto;
 import com.driving.school.dto.ResponseDto;
+import com.driving.school.dto.UpdateDto;
 
-public interface Mapper<T> {
+public interface GenericMapper<T> {
     ResponseDto toResponseDto(T source);
 
     T toModel(CreationDto requestData);
 
-    default void ifNotInstanceThrow(CreationDto requestData, Class<? extends CreationDto> expectedDtoType) {
+    void updateFields(T destination, UpdateDto requestData);
+
+    default void ifNotInstanceThrow(Object requestData, Class<?> expectedDtoType) {
         if (!expectedDtoType.isInstance(requestData)) {
             throw getInvalidDtoTypeException(requestData);
         }
     }
 
-    private IllegalArgumentException getInvalidDtoTypeException(CreationDto requestData) {
+    private IllegalArgumentException getInvalidDtoTypeException(Object requestData) {
         String template = """
                 Invalid mapper provided for request:
                 %s

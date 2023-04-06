@@ -1,7 +1,8 @@
 package com.driving.school.dto;
 
-public record InstructorCreationDto(
+public record InstructorRequestDto(
         String firstName,
         String lastName,
         String email
-) implements CreationDto{}
+
+) implements CreationDto, UpdateDto { }

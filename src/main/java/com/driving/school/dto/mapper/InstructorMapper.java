@@ -1,43 +1,37 @@
 package com.driving.school.dto.mapper;
 
-import com.driving.school.dto.CreationDto;
-import com.driving.school.dto.InstructorCreationDto;
-import com.driving.school.dto.InstructorResponseDto;
+import com.driving.school.dto.*;
 import com.driving.school.model.Instructor;
-import com.driving.school.model.Mailbox;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import java.util.HashSet;
-
-@Component
-public class InstructorMapper implements Mapper<Instructor> {
+@Mapper(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+public abstract class InstructorMapper implements GenericMapper<Instructor> {
     @Override
-    public InstructorResponseDto toResponseDto(Instructor entity) {
-        return new InstructorResponseDto(
-                entity.getId(),
-                entity.getFirstName(),
-                entity.getLastName(),
-                entity.getEmail()
-        );
-    }
+    public abstract InstructorResponseDto toResponseDto(Instructor entity);
 
     @Override
     public Instructor toModel(CreationDto requestData) {
-        ifNotInstanceThrow(requestData, InstructorCreationDto.class);
+        ifNotInstanceThrow(requestData, InstructorRequestDto.class);
+        InstructorRequestDto source = (InstructorRequestDto) requestData;
 
-        InstructorCreationDto source = (InstructorCreationDto) requestData;
-        return new Instructor(
-                0L,
-                source.firstName(),
-                source.lastName(),
-                source.email(),
-                new HashSet<>(),
-                new HashSet<>(),
-                new HashSet<>(),
-                new HashSet<>(),
-                new Mailbox()
-                );
+        return createEntity(source);
 
     }
+
+    @Override
+    public void updateFields(Instructor destination, UpdateDto requestData) {
+        ifNotInstanceThrow(requestData, InstructorRequestDto.class);
+        InstructorRequestDto source = (InstructorRequestDto) requestData;
+
+        patchEntity(destination, source);
+    }
+
+    @Mapping(target = "id", constant = "0L")
+    protected abstract Instructor createEntity(InstructorRequestDto source);
+
+    protected abstract void patchEntity(@MappingTarget Instructor destination, InstructorRequestDto source);
 
 }

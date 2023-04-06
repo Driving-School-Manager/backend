@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class StudentRemovalUtil {
+public class StudentRemovalUtil implements RemovalUtil<Student> {
     private final StudentRepository studentRepo;
     private final PaymentRepository paymentRepo;
     private final LessonRepository lessonRepo;
@@ -34,17 +34,19 @@ public class StudentRemovalUtil {
      * @param   student
      *          The Student entity, which is assumed to exist at this point.
      */
+    @Override
     @Transactional(propagation = Propagation.MANDATORY)
-    public void deleteStudent(Student student) {
+    public void deleteEntity(Student student) {
         long studentId = student.getId();
         log.info("Deleting Student with ID {}...", studentId);
 
         deleteAssociatedPayments(studentId);
+        // TODO decide what to do with Lessons when deleting the Student
         nullAssociatedLessons(studentId);
 
         long mailboxId = findAndClearAssociatedMailbox(student);
 
-        deleteStudent(studentId);
+        deleteEntityById(studentId);
 
         deleteMailbox(mailboxId);
     }
@@ -57,7 +59,7 @@ public class StudentRemovalUtil {
     private void nullAssociatedLessons(long studentId) {
         int changedLessonsCount = lessonRepo.nullStudentColumnByStudentId(studentId);
         if (changedLessonsCount != 0) {
-            log.warn("\t* Found {} associated Lessons that could not be deleted, Student column set to NULL instead",
+            log.warn("\t* Found {} associated Lessons that could not be deleted, 'student_id' column set to NULL instead",
                     changedLessonsCount);
         } else {
             log.info("\t* No Lessons were associated with this Student");
@@ -113,7 +115,7 @@ public class StudentRemovalUtil {
         log.info("\t* Deleted {} orphaned Message Bodies", deletedBodiesCount);
     }
 
-    private void deleteStudent(long studentId) {
+    private void deleteEntityById(long studentId) {
         studentRepo.deleteById(studentId);
         log.info("Student deleted.");
     }

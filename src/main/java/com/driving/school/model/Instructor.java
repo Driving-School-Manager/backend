@@ -2,9 +2,7 @@ package com.driving.school.model;
 
 import com.driving.school.model.enumeration.LicenseCategory;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,16 +27,24 @@ public class Instructor {
     @CollectionTable
     private Set<LicenseCategory> licenseCategories = new HashSet<>();
 
-    @OneToMany(mappedBy = "instructor")
+    @OneToMany(mappedBy = "instructor", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Lesson> lessons = new HashSet<>();
 
     @ManyToMany
     @JoinTable
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Vehicle> assignedVehicles = new HashSet<>();
 
-    @OneToMany(mappedBy = "instructor", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "instructor", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<InstructorSchedule> instructorSchedules = new HashSet<>();
 
     @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
-    private Mailbox mailbox;
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Mailbox mailbox = new Mailbox();
 }

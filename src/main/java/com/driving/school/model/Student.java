@@ -44,7 +44,7 @@ public class Student {
     @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private Mailbox mailbox;
+    private Mailbox mailbox = new Mailbox();
 
 //    public void addPayment(Payment payment) {
 //        this.payments.add(payment);
