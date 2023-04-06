@@ -1,6 +1,7 @@
-package com.driving.school.service;
+package com.driving.school.service.stub;
 
 import com.driving.school.dto.mapper.GenericMapper;
+import com.driving.school.service.CrudService;
 import com.driving.school.service.util.RemovalUtil;
 import org.springframework.data.jpa.repository.JpaRepository;
 
