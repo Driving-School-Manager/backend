@@ -48,7 +48,11 @@ public abstract class CrudService<T> {
         return create(requestData);
     }
 
-    protected abstract String getNotFoundExceptionTemplate();
+    protected String getNotFoundExceptionTemplate() {
+        return this.getClass().getGenericSuperclass().toString()
+                .replaceAll(".*\\.", "").replaceAll(">", "")
+                .concat(" ID %d was not found in the database.");
+    }
 
     protected void throwIfNotInDatabase(Long id) {
         if (!repo.existsById(id)) {

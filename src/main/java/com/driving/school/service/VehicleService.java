@@ -13,9 +13,4 @@ public class VehicleService extends CrudService<Vehicle> {
         super(repo, mapper);
     }
 
-    @Override
-    protected String getNotFoundExceptionTemplate() {
-        return "Vehicle ID %d was not found in the database.";
-    }
-
 }
