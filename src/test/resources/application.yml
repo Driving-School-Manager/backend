@@ -1,0 +1,11 @@
+# See: TEMPLATE.yml
+
+# Local profile in application-dev.yml
+spring:
+  profiles:
+    active: test
+
+  # Disable open-session-in-view
+  # https://vladmihalcea.com/the-open-session-in-view-anti-pattern/
+  jpa:
+    open-in-view: false

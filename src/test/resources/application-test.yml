@@ -1,0 +1,21 @@
+spring:
+  # Database connection
+  datasource:
+    url: jdbc:h2:mem:driving
+    username: test
+    password: test
+    driver-class-name: org.h2.Driver
+
+  # Hibernate/JPA settings
+  jpa:
+    show-sql: false
+    # only create datasources after Hibernate (and H2) launches
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  h2:
+    # In-browser console, not needed in testing
+    console:
+      enabled: false
