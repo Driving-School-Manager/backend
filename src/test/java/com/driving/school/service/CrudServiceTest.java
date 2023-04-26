@@ -15,12 +15,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
-import static org.mockito.BDDMockito.*;
-import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class CrudServiceTest {
@@ -69,7 +69,29 @@ class CrudServiceTest {
     @Test
     @DisplayName("Can getById when ID exists")
     void canGetById() {
+        //given
+        String foundInDb = "asdasd";
+        StubResponseDto responseMapping = new StubResponseDto(foundInDb);
+        Long expected = responseMapping.id();
+        //and
+        given(repo.findById(anyLong()))
+                .willReturn(Optional.of(foundInDb));
+        //and
+        ArgumentCaptor<String> argCaptor = ArgumentCaptor.forClass(String.class);
+        given(mapper.toResponseDto(argCaptor.capture()))
+                .willReturn(responseMapping);
 
+        //when
+        ResponseDto actual = service.getById(1L);
+
+        //then
+        verify(repo).findById(anyLong());
+        verify(mapper).toResponseDto(anyString());
+
+        assertThat(actual)
+                .isNotNull()
+                .extracting(ResponseDto::id)
+                .isEqualTo(expected);
     }
 
     @Test
