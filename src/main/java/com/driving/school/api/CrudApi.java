@@ -2,6 +2,7 @@ package com.driving.school.api;
 
 import com.driving.school.dto.CreationDto;
 import com.driving.school.dto.ResponseDto;
+import com.driving.school.dto.UpdateDto;
 import com.driving.school.service.CrudService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +13,9 @@ import java.net.URI;
 import java.util.List;
 
 @RequiredArgsConstructor
-public abstract class CrudApi<T extends CreationDto> {
+public abstract class CrudApi<T extends CreationDto, U extends UpdateDto> {
 
-    private final CrudService<?> service;
+    protected final CrudService<?> service;
 
     @GetMapping
     public ResponseEntity<List<ResponseDto>> getAll() {
@@ -45,11 +46,17 @@ public abstract class CrudApi<T extends CreationDto> {
         return ResponseEntity.noContent().build();
     }
 
+    // TODO consider removing this and only supporting PATCH
     @PutMapping("/{id}")
     public ResponseEntity<ResponseDto> replace(@PathVariable long id, @RequestBody T requestData) {
-        ResponseDto replacement = service.replace(id, requestData);
+        throw new UnsupportedOperationException("PUT is broken right now");
+    }
 
-        return ResponseEntity.ok(replacement);
+    @PatchMapping("/{id}")
+    public ResponseEntity<ResponseDto> patchById(@PathVariable long id, @RequestBody U requestData) {
+        ResponseDto patched = service.patchById(id, requestData);
+
+        return ResponseEntity.ok(patched);
     }
 
     private URI getNewResourceLocation(long id) {

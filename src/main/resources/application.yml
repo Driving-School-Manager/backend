@@ -4,3 +4,8 @@
 spring:
   profiles:
     active: dev
+
+# Disable open-session-in-view
+# https://vladmihalcea.com/the-open-session-in-view-anti-pattern/
+  jpa:
+    open-in-view: false

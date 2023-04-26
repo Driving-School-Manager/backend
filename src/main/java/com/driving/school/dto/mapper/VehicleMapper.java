@@ -1,33 +1,41 @@
 package com.driving.school.dto.mapper;
 
 import com.driving.school.dto.CreationDto;
-import com.driving.school.dto.VehicleCreationDto;
+import com.driving.school.dto.UpdateDto;
+import com.driving.school.dto.VehicleRequestDto;
 import com.driving.school.dto.VehicleResponseDto;
 import com.driving.school.model.Vehicle;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Component
-public class VehicleMapper implements Mapper<Vehicle> {
+@Mapper(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+public abstract class VehicleMapper implements GenericMapper<Vehicle> {
 
-    public VehicleResponseDto toResponseDto(Vehicle entity) {
-        return new VehicleResponseDto(
-                entity.getId(),
-                entity.getBrand(),
-                entity.isActive(),
-                entity.getYearOfManufacture()
-        );
-    }
+    @Override
+    public abstract VehicleResponseDto toResponseDto(Vehicle entity);
 
+    @Override
     public Vehicle toModel(CreationDto requestData) {
-        ifNotInstanceThrow(requestData, VehicleCreationDto.class);
+        ifNotInstanceThrow(requestData, VehicleRequestDto.class);
+        VehicleRequestDto source = (VehicleRequestDto) requestData;
 
-        VehicleCreationDto source = (VehicleCreationDto) requestData;
-        return new Vehicle(
-                0L,
-                source.brand(),
-                source.active(),
-                source.yearOfManufacture()
-        );
+        return createEntity(source);
     }
+
+    @Override
+    public void updateFields(Vehicle destination, UpdateDto requestData) {
+        ifNotInstanceThrow(requestData, VehicleRequestDto.class);
+        VehicleRequestDto source = (VehicleRequestDto) requestData;
+
+        patchEntity(destination, source);
+    }
+
+    @Mapping(target = "id", constant = "0L")
+    protected abstract Vehicle createEntity(VehicleRequestDto source);
+
+    protected abstract void patchEntity(@MappingTarget Vehicle destination, VehicleRequestDto source);
+
 
 }

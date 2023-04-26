@@ -2,14 +2,12 @@ package com.driving.school.dto;
 
 import java.math.BigDecimal;
 
-public record StudentResponseDto(
-        long id,
+public record StudentUpdateDto(
         String firstName,
         String lastName,
         String email,
-        boolean blocked,
-        boolean marketingEnabled,
+        Boolean blocked,
+        Boolean marketingEnabled,
         BigDecimal accountBalance,
-        int lessonMinutesLeft
-
-) implements ResponseDto { }
+        Integer lessonMinutesLeft
+) implements UpdateDto { }
