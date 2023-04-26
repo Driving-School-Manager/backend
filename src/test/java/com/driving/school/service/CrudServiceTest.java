@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -36,15 +38,14 @@ class CrudServiceTest {
     @DisplayName("Can getAll entities")
     void canGetAll() {
         //given
-        List<String> dbContent = List.of("a", "bc", "def");
-        List<StubResponseDto> responseMappings = dbContent.stream()
-                .map(StubResponseDto::new)
-                .toList();
-        List<Long> expected = responseMappings.stream()
-                .map(ResponseDto::id)
-                .toList();
+        List<String> dbContent = createDbContent();
+        List<StubResponseDto> responseMappings = createResponseMappings(dbContent);
+        List<Long> expected = createExpectedIds(responseMappings);
+        //and
+        given(repo.findAll())
+                .willReturn(dbContent);
+        //and
         ArgumentCaptor<String> argCaptor = ArgumentCaptor.forClass(String.class);
-        given(repo.findAll()).willReturn(dbContent);
         given(mapper.toResponseDto(argCaptor.capture()))
                 .willReturn(
                         responseMappings.get(0),
@@ -58,9 +59,51 @@ class CrudServiceTest {
         //then
         verify(repo).findAll();
         verify(mapper, times(dbContent.size())).toResponseDto(anyString());
+
         assertThat(actual)
+                .isNotNull()
                 .extracting(ResponseDto::id)
                 .containsExactlyElementsOf(expected);
     }
 
+    @Test
+    @DisplayName("Can getById when ID exists")
+    void canGetById() {
+
+    }
+
+    @Test
+    @DisplayName("Can getAll on an empty DB, returning empty list")
+    void canGetAllWhenEmpty() {
+        //given
+        given(repo.findAll())
+                .willReturn(new ArrayList<>());
+
+        //when
+        List<ResponseDto> actual = service.getAll();
+
+        //then
+        verify(repo).findAll();
+        verify(mapper, never()).toResponseDto(any());
+
+        assertThat(actual)
+                .isNotNull()
+                .isEmpty();
+    }
+
+    private List<String> createDbContent() {
+        return List.of("a", "bc", "def");
+    }
+
+    private List<StubResponseDto> createResponseMappings(List<String> dbContent) {
+        return dbContent.stream()
+                .map(StubResponseDto::new)
+                .toList();
+    }
+
+    private List<Long> createExpectedIds(List<StubResponseDto> responseMappings) {
+        return responseMappings.stream()
+                .map(ResponseDto::id)
+                .toList();
+    }
 }
