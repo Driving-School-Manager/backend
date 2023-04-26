@@ -1,6 +1,5 @@
 package com.driving.school.repository;
 
-import com.driving.school.model.PerUserMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,24 +8,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-public interface PerUserMessageRepository extends JpaRepository<PerUserMessage, Long> {
+public interface MessagePerUser extends JpaRepository<com.driving.school.model.MessagePerUser, Long> {
 
     @Modifying
     @Transactional
     @Query("""
-    DELETE FROM PerUserMessage pum WHERE pum.mailbox.id = :id
+    DELETE FROM MessagePerUser pum WHERE pum.mailbox.id = :id
     """)
     int deleteAllByMailboxId(@Param("id") Long id);
 
     @Query("""
-    SELECT pum FROM PerUserMessage pum
-    JOIN FETCH pum.messageBody
-    WHERE pum.mailbox.id = :id
+    SELECT msg FROM MessagePerUser msg
+    JOIN FETCH msg.messageBody
+    WHERE msg.mailbox.id = :id
     """)
-    List<PerUserMessage> findByMailboxId(@Param("id") Long id);
+    List<com.driving.school.model.MessagePerUser> findByMailboxId(@Param("id") Long id);
 
     @Query("""
-    SELECT COUNT(msg) FROM PerUserMessage msg
+    SELECT COUNT(msg) FROM MessagePerUser msg
     WHERE msg.messageBody.id = :id
     """)
     long countMessagesAttachedToBodyByBodyId(@Param("id") Long id);
