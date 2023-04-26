@@ -27,5 +27,5 @@ public class SharedMessageBody {
     private byte[] compressedData;
 
     @OneToMany(mappedBy = "messageBody", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    private Set<PerUserMessage> messages;
+    private Set<MessagePerUser> messages;
 }

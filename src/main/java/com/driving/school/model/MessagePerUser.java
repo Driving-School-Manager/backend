@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PerUserMessage {
+public class MessagePerUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

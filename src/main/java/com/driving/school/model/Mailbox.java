@@ -18,5 +18,5 @@ public class Mailbox {
     private long id;
 
     @OneToMany(mappedBy = "mailbox", orphanRemoval = true)
-    private Set<PerUserMessage> messages = new HashSet<>();
+    private Set<MessagePerUser> messages = new HashSet<>();
 }
