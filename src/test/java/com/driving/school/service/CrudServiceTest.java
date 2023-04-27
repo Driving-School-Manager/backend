@@ -117,6 +117,25 @@ class CrudServiceTest {
     }
 
     @Test
+    @DisplayName("getById(): throws if ID doesn't exist")
+    void whenGetById_thenThrows() {
+        //given
+        given(repo.findById(anyLong()))
+                .willReturn(Optional.empty());
+
+        //when
+        Throwable thrown = catchThrowable(() -> service.getById(1L));
+
+        //then
+        verify(repo).findById(anyLong());
+        verify(mapper, never()).toResponseDto(any());
+
+        assertThat(thrown)
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("String ID 1 was not found in the database.");
+    }
+
+    @Test
     @DisplayName("deleteById(): deletes existing entity")
     void whenDeleteById_thenOK() {
         //given
@@ -133,18 +152,18 @@ class CrudServiceTest {
     }
 
     @Test
-    @DisplayName("getById(): throws if ID doesn't exist")
-    void whenGetById_thenThrows() {
+    @DisplayName("deleteById(): throws if ID doesn't exist")
+    void whenDeleteById_thenThrows() {
         //given
         given(repo.findById(anyLong()))
                 .willReturn(Optional.empty());
 
         //when
-        Throwable thrown = catchThrowable(() -> service.getById(1L));
+        Throwable thrown = catchThrowable(() -> service.deleteById(1L));
 
         //then
         verify(repo).findById(anyLong());
-        verify(mapper, never()).toResponseDto(any());
+        verify(removalUtil, never()).deleteEntity(any());
 
         assertThat(thrown)
                 .isInstanceOf(ResourceNotFoundException.class)
