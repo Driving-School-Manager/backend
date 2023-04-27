@@ -1,7 +1,9 @@
 package com.driving.school.service;
 
+import com.driving.school.dto.CreationDto;
 import com.driving.school.dto.ResponseDto;
 import com.driving.school.dto.mapper.GenericMapper;
+import com.driving.school.exception.ResourceNotFoundException;
 import com.driving.school.service.stub.StubCrudService;
 import com.driving.school.service.stub.StubResponseDto;
 import com.driving.school.service.util.RemovalUtil;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -35,8 +38,8 @@ class CrudServiceTest {
     private StubCrudService service;
 
     @Test
-    @DisplayName("Can getAll entities")
-    void canGetAll() {
+    @DisplayName("getAll(): gets a list entities")
+    void whenGetAll_thenOK() {
         //given
         List<String> dbContent = createDbContent();
         List<StubResponseDto> responseMappings = createResponseMappings(dbContent);
@@ -45,8 +48,7 @@ class CrudServiceTest {
         given(repo.findAll())
                 .willReturn(dbContent);
         //and
-        ArgumentCaptor<String> argCaptor = ArgumentCaptor.forClass(String.class);
-        given(mapper.toResponseDto(argCaptor.capture()))
+        given(mapper.toResponseDto(any()))
                 .willReturn(
                         responseMappings.get(0),
                         responseMappings.get(1),
@@ -67,8 +69,27 @@ class CrudServiceTest {
     }
 
     @Test
-    @DisplayName("Can getById when ID exists")
-    void canGetById() {
+    @DisplayName("getAll(): on an empty DB, returns empty list")
+    void whenGetAll_thenEmptyList() {
+        //given
+        given(repo.findAll())
+                .willReturn(new ArrayList<>());
+
+        //when
+        List<ResponseDto> actual = service.getAll();
+
+        //then
+        verify(repo).findAll();
+        verify(mapper, never()).toResponseDto(any());
+
+        assertThat(actual)
+                .isNotNull()
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("getById(): gets an entity")
+    void whenGetById_thenOK() {
         //given
         String foundInDb = "asdasd";
         StubResponseDto responseMapping = new StubResponseDto(foundInDb);
@@ -86,8 +107,9 @@ class CrudServiceTest {
 
         //then
         verify(repo).findById(anyLong());
-        verify(mapper).toResponseDto(anyString());
 
+        assertThat(argCaptor.getValue())
+                .isEqualTo(foundInDb);
         assertThat(actual)
                 .isNotNull()
                 .extracting(ResponseDto::id)
@@ -95,23 +117,59 @@ class CrudServiceTest {
     }
 
     @Test
-    @DisplayName("Can getAll on an empty DB, returning empty list")
-    void canGetAllWhenEmpty() {
+    @DisplayName("create(): creates and saves an entity")
+    void whenCreate_thenOK() {
         //given
-        given(repo.findAll())
-                .willReturn(new ArrayList<>());
+        //anonymous empty implementation (notice the {})
+        CreationDto requestData = new CreationDto() {};
+        //and
+        given(mapper.toModel(any()))
+                .willReturn("new entity");
+        //and
+        String savedEntity = "saved entity";
+        given(repo.save(any()))
+                .willReturn(savedEntity);
+        //and
+        StubResponseDto responseMapping = new StubResponseDto(savedEntity);
+        Long expected = responseMapping.id();
+        ArgumentCaptor<String> argCaptor = ArgumentCaptor.forClass(String.class);
+        given(mapper.toResponseDto(argCaptor.capture()))
+                .willReturn(responseMapping);
 
         //when
-        List<ResponseDto> actual = service.getAll();
+        ResponseDto actual = service.create(requestData);
 
         //then
-        verify(repo).findAll();
-        verify(mapper, never()).toResponseDto(any());
+        verify(repo).save(any());
 
+        assertThat(argCaptor.getValue())
+                .isEqualTo(savedEntity);
         assertThat(actual)
                 .isNotNull()
-                .isEmpty();
+                .extracting(ResponseDto::id)
+                .isEqualTo(expected);
     }
+
+    @Test
+    @DisplayName("getById(): throws if ID doesn't exist")
+    void whenGetById_thenThrows() {
+        //given
+        given(repo.findById(anyLong()))
+                .willReturn(Optional.empty());
+
+        //when
+        Throwable thrown = catchThrowable(() -> service.getById(1L));
+
+        //then
+        verify(repo).findById(anyLong());
+        verify(mapper, never()).toResponseDto(any());
+
+        assertThat(thrown)
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("String ID 1 was not found in the database.");
+    }
+
+
 
     private List<String> createDbContent() {
         return List.of("a", "bc", "def");
