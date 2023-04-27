@@ -19,8 +19,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -44,62 +46,39 @@ class CrudServiceTest {
     void whenGetAll_thenOK() {
         //given
         List<String> dbContent = createDbContent();
-        List<StubResponseDto> responseMappings = createResponseMappings(dbContent);
-        List<Long> expected = createExpectedIds(responseMappings);
+        List<StubResponseDto> responseMappings = setUpMock_mapper_toResponseDto(dbContent);
         //and
-        given(repo.findAll())
-                .willReturn(dbContent);
-        //and
-        given(mapper.toResponseDto(any()))
-                .willReturn(
-                        responseMappings.get(0),
-                        responseMappings.get(1),
-                        responseMappings.get(2)
-                );
+        setUpMock_repo_findAll(dbContent);
 
         //when
         List<ResponseDto> actual = service.getAll();
 
         //then
         verify(repo).findAll();
-        verify(mapper, times(dbContent.size())).toResponseDto(anyString());
-
-        assertThat(actual)
-                .isNotNull()
-                .extracting(ResponseDto::id)
-                .containsExactlyElementsOf(expected);
+        assertAllDtosAreCorrect(responseMappings, actual);
     }
 
     @Test
     @DisplayName("getAll(): on an empty DB, returns empty list")
     void whenGetAll_thenEmptyList() {
         //given
-        given(repo.findAll())
-                .willReturn(new ArrayList<>());
+        setUpMock_repo_findAll(new ArrayList<>());
 
         //when
         List<ResponseDto> actual = service.getAll();
 
         //then
         verify(repo).findAll();
-        verify(mapper, never()).toResponseDto(any());
-
-        assertThat(actual)
-                .isNotNull()
-                .isEmpty();
+        assertNoDtoWasReturned(actual);
     }
 
     @Test
     @DisplayName("getById(): gets an entity")
     void whenGetById_thenOK() {
         //given
-        String foundInDb = "existing db entity";
-        given(repo.findById(anyLong()))
-                .willReturn(Optional.of(foundInDb));
+        String foundEntity = setUpMock_repo_findById();
         //and
-        StubResponseDto expectedResponseMapping = new StubResponseDto(foundInDb);
-        given(mapper.toResponseDto(any()))
-                .willReturn(expectedResponseMapping);
+        StubResponseDto expectedResponseMapping = setUpMock_mapper_toResponseDto(foundEntity);
 
         //when
         ResponseDto actual = service.getById(1L);
@@ -110,39 +89,17 @@ class CrudServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById(): deletes existing entity")
-    void whenDeleteById_thenOK() {
-        //given
-        String savedEntity = "saved entity";
-        given(repo.findById(anyLong()))
-                .willReturn(Optional.of(savedEntity));
-
-        //when
-        service.deleteById(1L);
-
-        //then
-        verify(repo).findById(anyLong());
-        verify(removalUtil).deleteEntity(savedEntity);
-    }
-
-    @Test
     @DisplayName("patchById(): updates an existing entity")
     void whenPatchById_thenOK() {
         //given
+        setUpMock_repo_findById();
+        //and
+        String patchedEntity = setUpMock_repo_save();
+        //and
+        StubResponseDto expectedResponseMapping = setUpMock_mapper_toResponseDto(patchedEntity);
+        //and
         //anonymous empty implementation (notice the {})
         UpdateDto requestData = new UpdateDto() {};
-        //and
-        String savedEntity = "saved entity";
-        given(repo.findById(anyLong()))
-                .willReturn(Optional.of(savedEntity));
-        //and
-        String patchedEntity = "patched entity";
-        given(repo.save(any()))
-                .willReturn(patchedEntity);
-        //and
-        StubResponseDto expectedResponseMapping = new StubResponseDto(patchedEntity);
-        given(mapper.toResponseDto(any()))
-                .willReturn(expectedResponseMapping);
 
         //when
         ResponseDto actual = service.patchById(1L, requestData);
@@ -152,21 +109,15 @@ class CrudServiceTest {
         assertCorrectDtoIsReturned(expectedResponseMapping, actual);
     }
 
-
     @Test
     @DisplayName("create(): creates and saves an entity")
     void whenCreate_thenOK() {
         //given
-        given(mapper.toModel(any()))
-                .willReturn("new entity");
+        setUpMock_mapper_toModel();
         //and
-        String savedEntity = "saved entity";
-        given(repo.save(any()))
-                .willReturn(savedEntity);
+        String savedEntity = setUpMock_repo_save();
         //and
-        StubResponseDto expectedResponseMapping = new StubResponseDto(savedEntity);
-        given(mapper.toResponseDto(any()))
-                .willReturn(expectedResponseMapping);
+        StubResponseDto expectedResponseMapping = setUpMock_mapper_toResponseDto(savedEntity);
         //and
         //anonymous empty implementation (notice the {})
         CreationDto requestData = new CreationDto() {};
@@ -177,6 +128,178 @@ class CrudServiceTest {
         //then
         verify(repo).save(any());
         assertCorrectDtoIsReturned(expectedResponseMapping, actual);
+    }
+
+    @Test
+    @DisplayName("deleteById(): deletes existing entity")
+    void whenDeleteById_thenOK() {
+        //given
+        String savedEntity = setUpMock_repo_findById();
+
+        //when
+        service.deleteById(1L);
+
+        //then
+        verify(repo).findById(anyLong());
+        verify(removalUtil).deleteEntity(savedEntity);
+    }
+
+    @Test
+    @DisplayName("getById(): throws if ID doesn't exist")
+    void whenGetById_thenThrows() {
+        //when & then
+        ThrowingCallable getById = () -> service.getById(1L);
+        Runnable invocationVerifier = () -> {
+            verify(repo).findById(1L);
+            verify(mapper, never()).toResponseDto(any());
+        };
+
+        whenMethod_thenThrows(getById, invocationVerifier);
+    }
+
+    @Test
+    @DisplayName("deleteById(): throws if ID doesn't exist")
+    void whenDeleteById_thenThrows() {
+        //when & then
+        ThrowingCallable deleteById = () -> service.deleteById(1L);
+        Runnable invocationVerifier = () -> {
+            verify(repo).findById(1L);
+            verify(removalUtil, never()).deleteEntity(any());
+        };
+
+        whenMethod_thenThrows(deleteById, invocationVerifier);
+    }
+
+    @Test
+    @DisplayName("patchById(): throws if ID doesn't exist")
+    void whenPatchById_thenThrows() {
+        //given
+        //anonymous empty implementation (notice the {})
+        UpdateDto requestData = new UpdateDto() {};
+
+        //when & then
+        ThrowingCallable patchById = () -> service.patchById(1L, requestData);
+        Runnable invocationVerifier = () -> {
+            verify(repo).findById(1L);
+            verify(repo, never()).save(any());
+            verify(mapper, never()).updateFields(any(), any());
+        };
+
+        whenMethod_thenThrows(patchById, invocationVerifier);
+    }
+
+    private void whenMethod_thenThrows(ThrowingCallable method, Runnable invocationVerifier) {
+        //given
+        setUpMock_repo_findById_whileDbIsEmpty();
+
+        //when
+        Throwable thrown = catchThrowable(method);
+
+        //then
+        invocationVerifier.run();
+
+        assertThat(thrown)
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("String ID 1 was not found in the database.");
+    }
+
+    private void setUpMock_repo_findAll(List<String> expectedDbContent) {
+        given(repo.findAll())
+                .willReturn(expectedDbContent);
+    }
+
+    private String setUpMock_repo_findById() {
+        return setUpMock_repo(entity ->
+                given(repo.findById(anyLong()))
+                        .willReturn(Optional.of(entity))
+        );
+    }
+
+    private String setUpMock_repo_save() {
+        return setUpMock_repo(entity ->
+                given(repo.save(any()))
+                        .willReturn(entity)
+        );
+    }
+
+    private String setUpMock_repo(Consumer<String> given) {
+        String expectedEntity = "expected entity";
+        given.accept(expectedEntity);
+        return expectedEntity;
+    }
+
+    private void setUpMock_repo_findById_whileDbIsEmpty() {
+        given(repo.findById(anyLong()))
+                .willReturn(Optional.empty());
+    }
+
+    private void setUpMock_mapper_toModel() {
+        given(mapper.toModel(any()))
+                .willReturn("new entity");
+    }
+
+    private StubResponseDto setUpMock_mapper_toResponseDto(String fakeSavedEntity) {
+        return setUpMock_mapper_toResponseDto(List.of(fakeSavedEntity)).get(0);
+    }
+
+    private List<StubResponseDto> setUpMock_mapper_toResponseDto(List<String> fakeSavedEntities) {
+        List<StubResponseDto> expectedResponseMappings = createExpectedResponseMappings(fakeSavedEntities);
+
+        setUpMapperReturnValues(expectedResponseMappings);
+
+        return expectedResponseMappings;
+    }
+
+    private List<StubResponseDto> createExpectedResponseMappings(List<String> fakeSavedEntities) {
+        return fakeSavedEntities.stream()
+                .map(StubResponseDto::new)
+                .toList();
+    }
+
+    private void setUpMapperReturnValues(List<StubResponseDto> responseMappings) {
+        if (responseMappings.size() > 1) {
+            setUpMapperForMultipleReturns(responseMappings);
+        } else if (responseMappings.size() == 1) {
+            setUpMapperForSingleReturn(responseMappings.get(0));
+        }
+        //nothing if size() == 0
+    }
+
+    private void setUpMapperForMultipleReturns(List<StubResponseDto> responseMappings) {
+        StubResponseDto[] responsesAsArray = responseMappings.toArray(StubResponseDto[]::new);
+
+        given(mapper.toResponseDto(any()))
+                .willReturn(
+                        responsesAsArray[0],
+                        Arrays.copyOfRange(responsesAsArray, 1, responsesAsArray.length)
+                );
+    }
+
+    private void setUpMapperForSingleReturn(StubResponseDto responseMapping) {
+        given(mapper.toResponseDto(any()))
+                .willReturn(responseMapping);
+    }
+
+    private void assertAllDtosAreCorrect(List<StubResponseDto> expectedResponses,
+                                         List<ResponseDto> actualResponses
+    ) {
+        verify(mapper, times(expectedResponses.size()))
+                .toResponseDto(anyString());
+        assertThat(actualResponses)
+                .isNotNull()
+                .extracting(ResponseDto::id)
+                .containsExactlyElementsOf(
+                        expectedResponses.stream()
+                                .map(StubResponseDto::id)
+                                .toList()
+                );
+    }
+
+    private void assertNoDtoWasReturned(List<ResponseDto> actualResponses) {
+        verify(mapper, never()).toResponseDto(any());
+        assertThat(actualResponses)
+                .isNotNull()
+                .isEmpty();
     }
 
     private void assertCorrectDtoIsReturned(StubResponseDto expectedResponse,
@@ -194,80 +317,8 @@ class CrudServiceTest {
                 .isEqualTo(expectedResponse.id());
     }
 
-    @Test
-    @DisplayName("getById(): throws if ID doesn't exist")
-    void whenGetById_thenThrows() {
-        //when & then
-        ThrowingCallable method = () -> service.getById(1L);
-        Runnable invocationVerifier = () -> {
-            verify(repo).findById(1L);
-            verify(mapper, never()).toResponseDto(any());
-        };
-
-        whenMethod_thenThrows(method, invocationVerifier);
-    }
-
-    @Test
-    @DisplayName("deleteById(): throws if ID doesn't exist")
-    void whenDeleteById_thenThrows() {
-        //when & then
-        ThrowingCallable method = () -> service.deleteById(1L);
-        Runnable invocationVerifier = () -> {
-            verify(repo).findById(1L);
-            verify(removalUtil, never()).deleteEntity(any());
-        };
-
-        whenMethod_thenThrows(method, invocationVerifier);
-    }
-
-    @Test
-    @DisplayName("patchById(): throws if ID doesn't exist")
-    void whenPatchById_thenThrows() {
-        //given
-        //anonymous empty implementation (notice the {})
-        UpdateDto requestData = new UpdateDto() {};
-
-        //when
-        ThrowingCallable method = () -> service.patchById(1L, requestData);
-        Runnable invocationVerifier = () -> {
-            verify(repo).findById(1L);
-            verify(repo, never()).save(any());
-            verify(mapper, never()).updateFields(any(), any());
-        };
-
-        whenMethod_thenThrows(method, invocationVerifier);
-    }
-
-    private void whenMethod_thenThrows(ThrowingCallable method, Runnable invocationVerifier) {
-        //given
-        given(repo.findById(anyLong()))
-                .willReturn(Optional.empty());
-
-        //when
-        Throwable thrown = catchThrowable(method);
-
-        //then
-        invocationVerifier.run();
-
-        assertThat(thrown)
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("String ID 1 was not found in the database.");
-    }
-
 
     private List<String> createDbContent() {
-        return List.of("a", "bc", "def");
-    }
-
-    private List<StubResponseDto> createResponseMappings(List<String> dbContent) {
-        return dbContent.stream()
-                .map(StubResponseDto::new)
-                .toList();
-    }
-
-    private List<Long> createExpectedIds(List<StubResponseDto> responseMappings) {
-        return responseMappings.stream()
-                .map(ResponseDto::id)
-                .toList();
+        return List.of("a", "bc", "def", "ghij");
     }
 }
