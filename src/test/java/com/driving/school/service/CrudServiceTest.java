@@ -2,11 +2,13 @@ package com.driving.school.service;
 
 import com.driving.school.dto.CreationDto;
 import com.driving.school.dto.ResponseDto;
+import com.driving.school.dto.UpdateDto;
 import com.driving.school.dto.mapper.GenericMapper;
 import com.driving.school.exception.ResourceNotFoundException;
 import com.driving.school.service.stub.StubCrudService;
 import com.driving.school.service.stub.StubResponseDto;
 import com.driving.school.service.util.RemovalUtil;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -91,48 +93,20 @@ class CrudServiceTest {
     @DisplayName("getById(): gets an entity")
     void whenGetById_thenOK() {
         //given
-        String foundInDb = "asdasd";
-        StubResponseDto responseMapping = new StubResponseDto(foundInDb);
-        Long expected = responseMapping.id();
-        //and
+        String foundInDb = "existing db entity";
         given(repo.findById(anyLong()))
                 .willReturn(Optional.of(foundInDb));
         //and
-        ArgumentCaptor<String> argCaptor = ArgumentCaptor.forClass(String.class);
-        given(mapper.toResponseDto(argCaptor.capture()))
-                .willReturn(responseMapping);
+        StubResponseDto expectedResponseMapping = new StubResponseDto(foundInDb);
+        given(mapper.toResponseDto(any()))
+                .willReturn(expectedResponseMapping);
 
         //when
         ResponseDto actual = service.getById(1L);
 
         //then
         verify(repo).findById(anyLong());
-
-        assertThat(argCaptor.getValue())
-                .isEqualTo(foundInDb);
-        assertThat(actual)
-                .isNotNull()
-                .extracting(ResponseDto::id)
-                .isEqualTo(expected);
-    }
-
-    @Test
-    @DisplayName("getById(): throws if ID doesn't exist")
-    void whenGetById_thenThrows() {
-        //given
-        given(repo.findById(anyLong()))
-                .willReturn(Optional.empty());
-
-        //when
-        Throwable thrown = catchThrowable(() -> service.getById(1L));
-
-        //then
-        verify(repo).findById(anyLong());
-        verify(mapper, never()).toResponseDto(any());
-
-        assertThat(thrown)
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("String ID 1 was not found in the database.");
+        assertCorrectDtoIsReturned(expectedResponseMapping, actual);
     }
 
     @Test
@@ -152,31 +126,37 @@ class CrudServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById(): throws if ID doesn't exist")
-    void whenDeleteById_thenThrows() {
+    @DisplayName("patchById(): updates an existing entity")
+    void whenPatchById_thenOK() {
         //given
+        //anonymous empty implementation (notice the {})
+        UpdateDto requestData = new UpdateDto() {};
+        //and
+        String savedEntity = "saved entity";
         given(repo.findById(anyLong()))
-                .willReturn(Optional.empty());
+                .willReturn(Optional.of(savedEntity));
+        //and
+        String patchedEntity = "patched entity";
+        given(repo.save(any()))
+                .willReturn(patchedEntity);
+        //and
+        StubResponseDto expectedResponseMapping = new StubResponseDto(patchedEntity);
+        given(mapper.toResponseDto(any()))
+                .willReturn(expectedResponseMapping);
 
         //when
-        Throwable thrown = catchThrowable(() -> service.deleteById(1L));
+        ResponseDto actual = service.patchById(1L, requestData);
 
         //then
         verify(repo).findById(anyLong());
-        verify(removalUtil, never()).deleteEntity(any());
-
-        assertThat(thrown)
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("String ID 1 was not found in the database.");
+        assertCorrectDtoIsReturned(expectedResponseMapping, actual);
     }
+
 
     @Test
     @DisplayName("create(): creates and saves an entity")
     void whenCreate_thenOK() {
         //given
-        //anonymous empty implementation (notice the {})
-        CreationDto requestData = new CreationDto() {};
-        //and
         given(mapper.toModel(any()))
                 .willReturn("new entity");
         //and
@@ -184,26 +164,95 @@ class CrudServiceTest {
         given(repo.save(any()))
                 .willReturn(savedEntity);
         //and
-        StubResponseDto responseMapping = new StubResponseDto(savedEntity);
-        Long expected = responseMapping.id();
-        ArgumentCaptor<String> argCaptor = ArgumentCaptor.forClass(String.class);
-        given(mapper.toResponseDto(argCaptor.capture()))
-                .willReturn(responseMapping);
+        StubResponseDto expectedResponseMapping = new StubResponseDto(savedEntity);
+        given(mapper.toResponseDto(any()))
+                .willReturn(expectedResponseMapping);
+        //and
+        //anonymous empty implementation (notice the {})
+        CreationDto requestData = new CreationDto() {};
 
         //when
         ResponseDto actual = service.create(requestData);
 
         //then
         verify(repo).save(any());
-
-        assertThat(argCaptor.getValue())
-                .isEqualTo(savedEntity);
-        assertThat(actual)
-                .isNotNull()
-                .extracting(ResponseDto::id)
-                .isEqualTo(expected);
+        assertCorrectDtoIsReturned(expectedResponseMapping, actual);
     }
 
+    private void assertCorrectDtoIsReturned(StubResponseDto expectedResponse,
+                                            ResponseDto actualResponse
+    ) {
+        ArgumentCaptor<String> mapperArgument = ArgumentCaptor.forClass(String.class);
+        //then
+        verify(mapper).toResponseDto(mapperArgument.capture());
+        assertThat(mapperArgument.getValue())
+                .isEqualTo(expectedResponse.getStubEntity());
+        //and
+        assertThat(actualResponse)
+                .isNotNull()
+                .extracting(ResponseDto::id)
+                .isEqualTo(expectedResponse.id());
+    }
+
+    @Test
+    @DisplayName("getById(): throws if ID doesn't exist")
+    void whenGetById_thenThrows() {
+        //when & then
+        ThrowingCallable method = () -> service.getById(1L);
+        Runnable invocationVerifier = () -> {
+            verify(repo).findById(1L);
+            verify(mapper, never()).toResponseDto(any());
+        };
+
+        whenMethod_thenThrows(method, invocationVerifier);
+    }
+
+    @Test
+    @DisplayName("deleteById(): throws if ID doesn't exist")
+    void whenDeleteById_thenThrows() {
+        //when & then
+        ThrowingCallable method = () -> service.deleteById(1L);
+        Runnable invocationVerifier = () -> {
+            verify(repo).findById(1L);
+            verify(removalUtil, never()).deleteEntity(any());
+        };
+
+        whenMethod_thenThrows(method, invocationVerifier);
+    }
+
+    @Test
+    @DisplayName("patchById(): throws if ID doesn't exist")
+    void whenPatchById_thenThrows() {
+        //given
+        //anonymous empty implementation (notice the {})
+        UpdateDto requestData = new UpdateDto() {};
+
+        //when
+        ThrowingCallable method = () -> service.patchById(1L, requestData);
+        Runnable invocationVerifier = () -> {
+            verify(repo).findById(1L);
+            verify(repo, never()).save(any());
+            verify(mapper, never()).updateFields(any(), any());
+        };
+
+        whenMethod_thenThrows(method, invocationVerifier);
+    }
+
+    private void whenMethod_thenThrows(ThrowingCallable method, Runnable invocationVerifier) {
+        //given
+        given(repo.findById(anyLong()))
+                .willReturn(Optional.empty());
+
+        //when
+        Throwable thrown = catchThrowable(method);
+
+        //then
+        invocationVerifier.run();
+
+        assertThat(thrown)
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("String ID 1 was not found in the database.");
+    }
 
 
     private List<String> createDbContent() {

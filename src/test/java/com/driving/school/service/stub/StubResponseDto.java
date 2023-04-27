@@ -5,13 +5,17 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class StubResponseDto implements ResponseDto {
-    private final String someStubField;
+    private final String stubEntity;
 
     /**
      * Returns the length of the internal field as its ID.
      */
     @Override
     public long id() {
-        return someStubField.length();
+        return stubEntity.length();
+    }
+
+    public String getStubEntity() {
+        return stubEntity;
     }
 }
