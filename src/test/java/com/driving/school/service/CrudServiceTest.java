@@ -117,6 +117,41 @@ class CrudServiceTest {
     }
 
     @Test
+    @DisplayName("deleteById(): deletes existing entity")
+    void whenDeleteById_thenOK() {
+        //given
+        String savedEntity = "saved entity";
+        given(repo.findById(anyLong()))
+                .willReturn(Optional.of(savedEntity));
+
+        //when
+        service.deleteById(1L);
+
+        //then
+        verify(repo).findById(anyLong());
+        verify(removalUtil).deleteEntity(savedEntity);
+    }
+
+    @Test
+    @DisplayName("getById(): throws if ID doesn't exist")
+    void whenGetById_thenThrows() {
+        //given
+        given(repo.findById(anyLong()))
+                .willReturn(Optional.empty());
+
+        //when
+        Throwable thrown = catchThrowable(() -> service.getById(1L));
+
+        //then
+        verify(repo).findById(anyLong());
+        verify(mapper, never()).toResponseDto(any());
+
+        assertThat(thrown)
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("String ID 1 was not found in the database.");
+    }
+
+    @Test
     @DisplayName("create(): creates and saves an entity")
     void whenCreate_thenOK() {
         //given
@@ -148,25 +183,6 @@ class CrudServiceTest {
                 .isNotNull()
                 .extracting(ResponseDto::id)
                 .isEqualTo(expected);
-    }
-
-    @Test
-    @DisplayName("getById(): throws if ID doesn't exist")
-    void whenGetById_thenThrows() {
-        //given
-        given(repo.findById(anyLong()))
-                .willReturn(Optional.empty());
-
-        //when
-        Throwable thrown = catchThrowable(() -> service.getById(1L));
-
-        //then
-        verify(repo).findById(anyLong());
-        verify(mapper, never()).toResponseDto(any());
-
-        assertThat(thrown)
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("String ID 1 was not found in the database.");
     }
 
 
