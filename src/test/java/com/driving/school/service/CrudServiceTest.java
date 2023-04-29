@@ -73,7 +73,7 @@ class CrudServiceTest {
     }
 
     @Test
-    @DisplayName("getById(): gets an entity")
+    @DisplayName("getById(): Successfully gets an entity")
     void whenGetById_thenOK() {
         //given
         String foundEntity = setUpMock_repo_findById();
