@@ -42,7 +42,7 @@ class CrudServiceTest {
     private StubCrudService service;
 
     @Test
-    @DisplayName("getAll(): gets a list entities")
+@DisplayName("getAll(): gets a list of entities")
     void whenGetAll_thenOK() {
         //given
         List<String> dbContent = createDbContent();
