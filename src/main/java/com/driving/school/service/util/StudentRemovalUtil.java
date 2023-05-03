@@ -28,7 +28,7 @@ public class StudentRemovalUtil implements RemovalUtil<Student> {
      * 1. deletes all Payments associated with that Student<br>
      * 2. if there are any Lessons associated with the Student, this method WILL NOT delete them and instead set
      * their 'student_id' to NULL<br>
-     * 3. deletes all (individual) PerUserMessages associated with the Student. If a given MessagePerUserRepository is the LAST
+     * 3. deletes all (individual) PerUserMessages associated with the Student. If a given MessagePerUser is the LAST
      * ONE with a given SharedMessageBody, the SharedMessageBody is also deleted<br>
      * 4. deletes the Mailbox associated with the Student<br>
      * @param   student
