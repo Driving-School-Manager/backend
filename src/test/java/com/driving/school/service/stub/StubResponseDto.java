@@ -1,21 +1,13 @@
 package com.driving.school.service.stub;
 
 import com.driving.school.dto.ResponseDto;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-public class StubResponseDto implements ResponseDto {
-    private final String stubEntity;
-
+public record StubResponseDto(StubEntity stubEntity) implements ResponseDto {
     /**
      * Returns the length of the internal field as its ID.
      */
     @Override
     public long id() {
-        return stubEntity.length();
-    }
-
-    public String getStubEntity() {
-        return stubEntity;
+        return stubEntity.getSomeField().length();
     }
 }

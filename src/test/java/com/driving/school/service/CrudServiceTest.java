@@ -6,60 +6,62 @@ import com.driving.school.dto.UpdateDto;
 import com.driving.school.dto.mapper.GenericMapper;
 import com.driving.school.exception.ResourceNotFoundException;
 import com.driving.school.service.stub.StubCrudService;
+import com.driving.school.service.stub.StubEntity;
 import com.driving.school.service.stub.StubResponseDto;
 import com.driving.school.service.util.RemovalUtil;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
+import static com.driving.school.test_util.TestDataFactory.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CrudServiceTest {
 
     @Mock
-    private JpaRepository<String, Long> repo;
+    private JpaRepository<StubEntity, Long> repo;
     @Mock
-    private GenericMapper<String> mapper;
+    private GenericMapper<StubEntity> mapper;
     @Mock
-    private RemovalUtil<String> removalUtil;
+    private RemovalUtil<StubEntity> removalUtil;
     @InjectMocks
     private StubCrudService service;
 
     @Test
-@DisplayName("getAll(): gets a list of entities")
+    @DisplayName("getAll(): Gets a list of entities")
     void whenGetAll_thenOK() {
         //given
-        List<String> dbContent = createDbContent();
-        List<StubResponseDto> responseMappings = setUpMock_mapper_toResponseDto(dbContent);
+        List<StubEntity> dbContent = createDbContent();
+        List<StubResponseDto> responseMappings = createExpectedResponseMappings(dbContent);
         //and
-        setUpMock_repo_findAll(dbContent);
+        setUpMocks_getAll(dbContent, responseMappings);
 
         //when
         List<ResponseDto> actual = service.getAll();
 
         //then
         verify(repo).findAll();
+        verify(mapper, times(responseMappings.size())).toResponseDto(any());
         assertAllDtosAreCorrect(responseMappings, actual);
     }
 
     @Test
-    @DisplayName("getAll(): on an empty DB, returns empty list")
+    @DisplayName("getAll(): On an empty DB, returns empty list")
     void whenGetAll_thenEmptyList() {
         //given
         setUpMock_repo_findAll(new ArrayList<>());
@@ -69,6 +71,7 @@ class CrudServiceTest {
 
         //then
         verify(repo).findAll();
+        verify(mapper, never()).toResponseDto(any());
         assertNoDtoWasReturned(actual);
     }
 
@@ -76,9 +79,10 @@ class CrudServiceTest {
     @DisplayName("getById(): Successfully gets an entity")
     void whenGetById_thenOK() {
         //given
-        String foundEntity = setUpMock_repo_findById();
+        StubEntity expectedEntity = new StubEntity("expected entity");
+        StubResponseDto expectedResponseMapping = createExpectedResponseMapping(expectedEntity);
         //and
-        StubResponseDto expectedResponseMapping = setUpMock_mapper_toResponseDto(foundEntity);
+        setUpMocks_getById(expectedEntity, expectedResponseMapping);
 
         //when
         ResponseDto actual = service.getById(1L);
@@ -89,38 +93,37 @@ class CrudServiceTest {
     }
 
     @Test
-    @DisplayName("patchById(): updates an existing entity")
+    @DisplayName("patchById(): Updates an existing entity")
     void whenPatchById_thenOK() {
         //given
-        setUpMock_repo_findById();
+        StubEntity existingEntity = new StubEntity("expected entity");
+        String patchedField = "patched entity";
+        StubEntity entityAfterPatching = new StubEntity(patchedField);
+        StubEntity savedEntity = new StubEntity("saved entity");
+        StubResponseDto expectedResponseMapping = createExpectedResponseMapping(savedEntity);
+        UpdateDto requestData = new UpdateDto() {}; //anonymous empty implementation (notice the {})
         //and
-        String patchedEntity = setUpMock_repo_save();
-        //and
-        StubResponseDto expectedResponseMapping = setUpMock_mapper_toResponseDto(patchedEntity);
-        //and
-        //anonymous empty implementation (notice the {})
-        UpdateDto requestData = new UpdateDto() {};
+        setUpMocks_patchById(existingEntity, entityAfterPatching, savedEntity, expectedResponseMapping);
 
         //when
         ResponseDto actual = service.patchById(1L, requestData);
 
         //then
-        verify(repo).findById(anyLong());
+        verifySavedEntityWasModified(patchedField);
+        //and
         assertCorrectDtoIsReturned(expectedResponseMapping, actual);
     }
 
     @Test
-    @DisplayName("create(): creates and saves an entity")
+    @DisplayName("create(): Saves an object as an entity in the db")
     void whenCreate_thenOK() {
         //given
-        setUpMock_mapper_toModel();
+        StubEntity entityFromRequest = new StubEntity("entity from request");
+        StubEntity savedEntity = new StubEntity("saved entity");
+        StubResponseDto expectedResponseMapping = createExpectedResponseMapping(savedEntity);
+        CreationDto requestData = new CreationDto() {}; //anonymous empty implementation (notice the {})
         //and
-        String savedEntity = setUpMock_repo_save();
-        //and
-        StubResponseDto expectedResponseMapping = setUpMock_mapper_toResponseDto(savedEntity);
-        //and
-        //anonymous empty implementation (notice the {})
-        CreationDto requestData = new CreationDto() {};
+        setUpMocks_create(entityFromRequest, savedEntity, expectedResponseMapping);
 
         //when
         ResponseDto actual = service.create(requestData);
@@ -131,21 +134,23 @@ class CrudServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById(): deletes existing entity")
+    @DisplayName("deleteById(): Deletes an existing entity")
     void whenDeleteById_thenOK() {
         //given
-        String savedEntity = setUpMock_repo_findById();
+        StubEntity existingEntity = new StubEntity("expected entity");
+        //and
+        setUpMock_repo_findById(existingEntity);
 
         //when
         service.deleteById(1L);
 
         //then
         verify(repo).findById(anyLong());
-        verify(removalUtil).deleteEntity(savedEntity);
+        verify(removalUtil).deleteEntity(existingEntity);
     }
 
     @Test
-    @DisplayName("getById(): throws if ID doesn't exist")
+    @DisplayName("getById(): Throws if ID is not found")
     void whenGetById_thenThrows() {
         //when & then
         ThrowingCallable getById = () -> service.getById(1L);
@@ -158,7 +163,7 @@ class CrudServiceTest {
     }
 
     @Test
-    @DisplayName("deleteById(): throws if ID doesn't exist")
+    @DisplayName("deleteById(): Throws if ID is not found")
     void whenDeleteById_thenThrows() {
         //when & then
         ThrowingCallable deleteById = () -> service.deleteById(1L);
@@ -171,11 +176,10 @@ class CrudServiceTest {
     }
 
     @Test
-    @DisplayName("patchById(): throws if ID doesn't exist")
+    @DisplayName("patchById(): Throws if ID is not found")
     void whenPatchById_thenThrows() {
         //given
-        //anonymous empty implementation (notice the {})
-        UpdateDto requestData = new UpdateDto() {};
+        UpdateDto requestData = new UpdateDto() {}; //anonymous empty implementation (notice the {})
 
         //when & then
         ThrowingCallable patchById = () -> service.patchById(1L, requestData);
@@ -190,7 +194,7 @@ class CrudServiceTest {
 
     private void whenMethod_thenThrows(ThrowingCallable method, Runnable invocationVerifier) {
         //given
-        setUpMock_repo_findById_whileDbIsEmpty();
+        setUpMock_repo_findById(null);
 
         //when
         Throwable thrown = catchThrowable(method);
@@ -203,64 +207,69 @@ class CrudServiceTest {
                 .hasMessageContaining("String ID 1 was not found in the database.");
     }
 
-    private void setUpMock_repo_findAll(List<String> expectedDbContent) {
-        given(repo.findAll())
-                .willReturn(expectedDbContent);
+    private void setUpMock_mapper_updateFields(StubEntity patchedEntity) {
+        Answer<Void> answer = call -> {
+            StubEntity entityToPatch = call.getArgument(0, StubEntity.class);
+            String patchText = patchedEntity.getSomeField();
+            entityToPatch.setSomeField(patchText);
+            return null;
+        };
+        willAnswer(answer).given(mapper).updateFields(any(), any());
     }
 
-    private String setUpMock_repo_findById() {
-        return setUpMock_repo(entity ->
-                given(repo.findById(anyLong()))
-                        .willReturn(Optional.of(entity))
-        );
+    private void setUpMocks_getAll(List<StubEntity> dbContent, List<StubResponseDto> responseMappings) {
+        setUpMock_repo_findAll(dbContent);
+        setUpMock_mapper_toResponseDto(responseMappings);
     }
 
-    private String setUpMock_repo_save() {
-        return setUpMock_repo(entity ->
-                given(repo.save(any()))
-                        .willReturn(entity)
-        );
+    private void setUpMocks_getById(StubEntity expectedEntity, StubResponseDto expectedResponseMapping) {
+        setUpMock_repo_findById(expectedEntity);
+        setUpMock_mapper_toResponseDto(expectedResponseMapping);
     }
 
-    private String setUpMock_repo(Consumer<String> given) {
-        String expectedEntity = "expected entity";
-        given.accept(expectedEntity);
-        return expectedEntity;
+    private void setUpMocks_patchById(StubEntity existingEntity,
+                                      StubEntity patchedEntity,
+                                      StubEntity savedEntity,
+                                      StubResponseDto expectedResponseMapping) {
+        setUpMock_repo_findById(existingEntity);
+        setUpMock_mapper_updateFields(patchedEntity);
+        setUpMock_repo_save(patchedEntity, savedEntity);
+        setUpMock_mapper_toResponseDto(expectedResponseMapping);
     }
 
-    private void setUpMock_repo_findById_whileDbIsEmpty() {
-        given(repo.findById(anyLong()))
-                .willReturn(Optional.empty());
+    private void setUpMocks_create(StubEntity entityFromRequest,
+                                   StubEntity savedEntity,
+                                   StubResponseDto expectedResponseMapping) {
+        setUpMock_mapper_toModel(entityFromRequest);
+        setUpMock_repo_save(entityFromRequest, savedEntity);
+        setUpMock_mapper_toResponseDto(expectedResponseMapping);
     }
 
-    private void setUpMock_mapper_toModel() {
-        given(mapper.toModel(any()))
-                .willReturn("new entity");
+    private void setUpMock_repo_findAll(List<StubEntity> expectedDbContent) {
+        given(repo.findAll()).willReturn(expectedDbContent);
     }
 
-    private StubResponseDto setUpMock_mapper_toResponseDto(String fakeSavedEntity) {
-        return setUpMock_mapper_toResponseDto(List.of(fakeSavedEntity)).get(0);
+    private void setUpMock_repo_findById(StubEntity fakeEntity) {
+        given(repo.findById(anyLong())).willReturn(Optional.ofNullable(fakeEntity));
     }
 
-    private List<StubResponseDto> setUpMock_mapper_toResponseDto(List<String> fakeSavedEntities) {
-        List<StubResponseDto> expectedResponseMappings = createExpectedResponseMappings(fakeSavedEntities);
-
-        setUpMapperReturnValues(expectedResponseMappings);
-
-        return expectedResponseMappings;
+    private void setUpMock_repo_save(StubEntity entityToSave, StubEntity entityAfterSaving) {
+        given(repo.save(entityToSave)).willReturn(entityAfterSaving);
     }
 
-    private List<StubResponseDto> createExpectedResponseMappings(List<String> fakeSavedEntities) {
-        return fakeSavedEntities.stream()
-                .map(StubResponseDto::new)
-                .toList();
+    private void setUpMock_mapper_toModel(StubEntity fakeEntity) {
+        given(mapper.toModel(any())).willReturn(fakeEntity);
     }
 
-    private void setUpMapperReturnValues(List<StubResponseDto> responseMappings) {
+    private void setUpMock_mapper_toResponseDto(StubResponseDto responseMapping) {
+        given(mapper.toResponseDto(any())).willReturn(responseMapping);
+    }
+
+    private void setUpMock_mapper_toResponseDto(List<StubResponseDto> responseMappings) {
         if (responseMappings.size() > 1) {
             setUpMapperForMultipleReturns(responseMappings);
         } else if (responseMappings.size() == 1) {
-            setUpMapperForSingleReturn(responseMappings.get(0));
+            setUpMock_mapper_toResponseDto(responseMappings.get(0));
         }
         //nothing if size() == 0
     }
@@ -268,23 +277,14 @@ class CrudServiceTest {
     private void setUpMapperForMultipleReturns(List<StubResponseDto> responseMappings) {
         StubResponseDto[] responsesAsArray = responseMappings.toArray(StubResponseDto[]::new);
 
-        given(mapper.toResponseDto(any()))
-                .willReturn(
-                        responsesAsArray[0],
-                        Arrays.copyOfRange(responsesAsArray, 1, responsesAsArray.length)
-                );
-    }
-
-    private void setUpMapperForSingleReturn(StubResponseDto responseMapping) {
-        given(mapper.toResponseDto(any()))
-                .willReturn(responseMapping);
+        given(mapper.toResponseDto(any())).willReturn(
+                responsesAsArray[0],
+                Arrays.copyOfRange(responsesAsArray, 1, responsesAsArray.length)
+        );
     }
 
     private void assertAllDtosAreCorrect(List<StubResponseDto> expectedResponses,
-                                         List<ResponseDto> actualResponses
-    ) {
-        verify(mapper, times(expectedResponses.size()))
-                .toResponseDto(anyString());
+                                         List<ResponseDto> actualResponses) {
         assertThat(actualResponses)
                 .isNotNull()
                 .extracting(ResponseDto::id)
@@ -296,7 +296,6 @@ class CrudServiceTest {
     }
 
     private void assertNoDtoWasReturned(List<ResponseDto> actualResponses) {
-        verify(mapper, never()).toResponseDto(any());
         assertThat(actualResponses)
                 .isNotNull()
                 .isEmpty();
@@ -305,11 +304,10 @@ class CrudServiceTest {
     private void assertCorrectDtoIsReturned(StubResponseDto expectedResponse,
                                             ResponseDto actualResponse
     ) {
-        ArgumentCaptor<String> mapperArgument = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<StubEntity> mapperArgument = ArgumentCaptor.forClass(StubEntity.class);
         //then
         verify(mapper).toResponseDto(mapperArgument.capture());
-        assertThat(mapperArgument.getValue())
-                .isEqualTo(expectedResponse.getStubEntity());
+        assertThat(mapperArgument.getValue()).isEqualTo(expectedResponse.stubEntity());
         //and
         assertThat(actualResponse)
                 .isNotNull()
@@ -317,8 +315,19 @@ class CrudServiceTest {
                 .isEqualTo(expectedResponse.id());
     }
 
+    private void verifySavedEntityWasModified(String expectedModifiedField) {
+        InOrder inOrder = inOrder(mapper, repo);
 
-    private List<String> createDbContent() {
-        return List.of("a", "bc", "def", "ghij");
+        //1. updateFields
+        ArgumentCaptor<StubEntity> updateArgCaptor = ArgumentCaptor.forClass(StubEntity.class);
+        inOrder.verify(mapper).updateFields(updateArgCaptor.capture(), any());
+
+        //2. save
+        ArgumentCaptor<StubEntity> saveArgCaptor = ArgumentCaptor.forClass(StubEntity.class);
+        inOrder.verify(repo).save(saveArgCaptor.capture());
+
+        assertThat(updateArgCaptor.getValue()).isEqualTo(saveArgCaptor.getValue());
+        assertThat(saveArgCaptor.getValue().getSomeField()).isEqualTo(expectedModifiedField);
     }
+
 }
