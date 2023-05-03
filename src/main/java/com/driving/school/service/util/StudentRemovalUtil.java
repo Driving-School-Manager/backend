@@ -1,5 +1,6 @@
 package com.driving.school.service.util;
 
+import com.driving.school.model.MessagePerUser;
 import com.driving.school.model.Student;
 import com.driving.school.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class StudentRemovalUtil implements RemovalUtil<Student> {
     private final PaymentRepository paymentRepo;
     private final LessonRepository lessonRepo;
     private final MailboxRepository mailboxRepository;
-    private final MessagePerUser userMessageRepo;
+    private final MessagePerUserRepository userMessageRepo;
     private final SharedMessageBodyRepository sharedMessageBodyRepository;
 
 
@@ -27,7 +28,7 @@ public class StudentRemovalUtil implements RemovalUtil<Student> {
      * 1. deletes all Payments associated with that Student<br>
      * 2. if there are any Lessons associated with the Student, this method WILL NOT delete them and instead set
      * their 'student_id' to NULL<br>
-     * 3. deletes all (individual) PerUserMessages associated with the Student. If a given MessagePerUser is the LAST
+     * 3. deletes all (individual) PerUserMessages associated with the Student. If a given MessagePerUserRepository is the LAST
      * ONE with a given SharedMessageBody, the SharedMessageBody is also deleted<br>
      * 4. deletes the Mailbox associated with the Student<br>
      * @param   student
@@ -74,7 +75,7 @@ public class StudentRemovalUtil implements RemovalUtil<Student> {
     }
 
     private void clearMailbox(long mailboxId) {
-        List<com.driving.school.model.MessagePerUser> messages = findUserMessages(mailboxId);
+        List<MessagePerUser> messages = findUserMessages(mailboxId);
 
         List<Long> bodyIdsMarkedForRemoval = findPotentiallyOrphanedMessageBodies(messages);
 
@@ -83,13 +84,13 @@ public class StudentRemovalUtil implements RemovalUtil<Student> {
         deleteOrphanedMessageBodies(bodyIdsMarkedForRemoval);
     }
 
-    private List<com.driving.school.model.MessagePerUser> findUserMessages(long mailboxId) {
+    private List<MessagePerUser> findUserMessages(long mailboxId) {
         List<com.driving.school.model.MessagePerUser> messages = userMessageRepo.findByMailboxId(mailboxId);
         log.info("\t* Found {} associated Messages, checking for potentially orphaned MessageBodies", messages.size());
         return messages;
     }
 
-    private List<Long> findPotentiallyOrphanedMessageBodies(List<com.driving.school.model.MessagePerUser> messages) {
+    private List<Long> findPotentiallyOrphanedMessageBodies(List<MessagePerUser> messages) {
         return messages.stream()
                 .map(msg -> msg.getMessageBody().getId())
                 .filter(this::willBodyBecomeOrphanedAfterMessageIsRemoved)
