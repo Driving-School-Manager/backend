@@ -6,7 +6,7 @@ import com.driving.school.service.stub.StubResponseDto;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class TestDataFactory {
+public class TestStubFactory {
     public static List<StubEntity> createDbContent() {
         return Stream.of("a", "bc", "def", "ghij")
                 .map(StubEntity::new)

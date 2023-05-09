@@ -1,5 +1,6 @@
 package com.driving.school.repository;
 
+import com.driving.school.model.MessagePerUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-public interface MessagePerUser extends JpaRepository<com.driving.school.model.MessagePerUser, Long> {
+public interface MessagePerUserRepository extends JpaRepository<MessagePerUser, Long> {
 
     @Modifying
     @Transactional
